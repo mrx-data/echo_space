@@ -25,7 +25,7 @@ export default function StudioLoginPage() {
             Echo Studio
           </h1>
           <p className="max-w-2xl border-l-8 border-black bg-white px-5 py-4 text-xl font-bold leading-snug shadow-[6px_6px_0_0_#000]">
-            用配置好的管理员邮箱接收 magic link，进入单人内容工作台。
+            用管理员邮箱和密码登录，进入单人内容工作台。也支持 Magic Link 备用登录。
           </p>
         </div>
         <LoginForm />
