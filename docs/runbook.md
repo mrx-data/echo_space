@@ -13,6 +13,21 @@ Open:
 http://localhost:3000
 ```
 
+If `.env.local` changes, stop and restart `npm run dev`.
+
+## Environment
+
+Required locally and in Vercel:
+
+```text
+NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY
+ADMIN_EMAIL
+```
+
+Do not commit `.env.local` or copy secret values into docs.
+
 ## Verification
 
 Run before handoff:
@@ -63,6 +78,18 @@ Seed existing file content:
 ```bash
 npm run seed:articles
 ```
+
+Deploy through Vercel:
+
+```text
+1. Push committed changes to GitHub.
+2. Connect or refresh the GitHub repository in Vercel.
+3. Add the required environment variables in Vercel.
+4. Redeploy the project.
+5. Smoke check /, /articles, /studio/login, and one /content/{slug} route.
+```
+
+Article data is stored in Supabase. A Vercel redeploy changes app code but does not delete drafts, archived records, or published articles.
 
 Add a new article:
 
@@ -133,3 +160,12 @@ If public pages show fixture content after cutover, confirm `NEXT_PUBLIC_SUPABAS
 If publish fails, check the article has `slug`, `title`, `excerpt`, `highlight`, and at least one section with heading and body.
 
 If a changed slug still serves stale content, confirm mutation routes are calling `revalidateTag` and that the old slug was saved before the patch.
+
+## Known State
+
+On 2026-05-02:
+
+- Supabase project `otdvtttsatrrkxvjdjmw` had `supabase/schema.sql` applied.
+- `npm run seed:articles` imported 2 fixture articles.
+- `npm run lint` passed.
+- `npm run build` passed.

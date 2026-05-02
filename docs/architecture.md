@@ -6,13 +6,17 @@ Echo Space is a personal site built with the Next.js App Router and a Supabase-b
 
 ## Runtime Model
 
+- Browser requests hit Next.js first.
+- Server Components and Route Handlers query Supabase.
+- The browser never writes directly to the `articles` table.
+- Vercel hosts the app runtime; Supabase owns durable content and auth state.
 - Public pages: `/`, `/articles`, `/content/[slug]`, `/content/echo-space`.
 - Admin pages: `/studio`, `/studio/login`, `/studio/articles`, `/studio/articles/new`, `/studio/articles/[id]`.
 - Compatibility route: `/editor` redirects to `/studio/articles/new`.
 - Admin APIs: `/api/admin/articles/*`.
 - Auth APIs: `/api/auth/magic-link`, `/api/auth/session`, `/api/auth/logout`.
 - All public content reads are server-side. Admin writes use server-side Supabase service credentials.
-- If Supabase env vars are missing, public pages fall back to `lib/content.ts` fixtures so local build verification remains possible before cutover.
+- If Supabase env vars are missing, public pages fall back to `lib/content.ts` fixtures so local build verification remains possible.
 
 ## Content Model
 
@@ -55,6 +59,23 @@ The Studio editor is a client component that:
 ## Caching
 
 Public list reads are tagged with `articles`. Public detail reads are tagged with `articles` and `article:{slug}`. After create, update, publish, unpublish, or archive, the admin mutation invalidates `articles`, the current slug tag, and the old slug tag when a slug changes.
+
+## Deployment Model
+
+GitHub is the source repository and Vercel is the deployment target for the Next.js app. Supabase remains external durable infrastructure, so deploying a new Vercel build does not reset article data.
+
+Vercel must have the same runtime variables as local development:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `ADMIN_EMAIL`
+
+The `SUPABASE_SERVICE_ROLE_KEY` is only used from server-side Route Handlers and must not be exposed to browser code.
+
+## Cutover State
+
+As of 2026-05-02, the Supabase project has the `articles` table from `supabase/schema.sql`, and the one-time seed imported the fixture articles `horizontal-vertical-ai-research` and `hermes-weixin`.
 
 ## UI System
 

@@ -12,7 +12,7 @@ Echo Space is a small personal website built with Next.js App Router, TypeScript
 - `/studio/articles/new` — draft editor with live preview.
 - `/studio/articles/[id]` — edit, publish, unpublish, or archive an article.
 - `/editor` — compatibility redirect to `/studio/articles/new`.
-- `/content/horizontal-vertical-ai-research` — article detail page for `横纵分析法：把 AI 深度研究融入个人知识工作流`.
+- `/content/[slug]` — published article detail page resolved from Supabase by slug.
 - `/content/echo-space` — legacy URL that redirects to the current featured article.
 
 ## Tech Stack
@@ -115,11 +115,27 @@ Create the variables from `.env.example` locally and in Vercel:
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `ADMIN_EMAIL`
 
+Restart `npm run dev` after changing `.env.local`; Next.js reads these values when the dev server starts.
+
+## Supabase Setup
+
+1. Open the Supabase SQL editor for the project.
+2. Run `supabase/schema.sql` to create the `articles` table and `updated_at` trigger.
+3. Add the four environment variables above to `.env.local`.
+4. Run `npm run seed:articles` once to import fixture articles from `lib/content.ts`.
+5. Confirm `/articles` and `/content/{slug}` load published rows from Supabase.
+
+## Deploying To Vercel
+
+Connect the GitHub repository to a Vercel project, then add the same environment variables in Vercel before redeploying. Code deploys update the Next.js app only; article data is stored durably in Supabase, so a Vercel deployment does not erase drafts or published articles.
+
+After deployment, the configured admin can continue creating and publishing articles through `/studio`. Other visitors can only read published content through public pages.
+
 ## Editing Content
 
 Open `/studio/login`, sign in with the configured `ADMIN_EMAIL`, then use `/studio/articles/new` or `/studio/articles/[id]`. The editor saves drafts through `/api/admin/articles/*`; publishing updates Supabase and invalidates tagged Next.js caches.
 
-`lib/content.ts` is kept as a migration fixture and type source. It is not mutated at runtime. Public reads come from Supabase when env vars are configured and fall back to the fixture only for local build safety before cutover.
+`lib/content.ts` is kept as a migration fixture and type source. It is not mutated at runtime. Public reads come from Supabase when env vars are configured and fall back to the fixture only for local build safety when env vars are missing.
 
 Each article contains:
 
