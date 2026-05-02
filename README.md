@@ -133,7 +133,9 @@ After deployment, the configured admin can continue creating and publishing arti
 
 ## Editing Content
 
-Open `/studio/login`, sign in with the configured `ADMIN_EMAIL`, then use `/studio/articles/new` or `/studio/articles/[id]`. The editor saves drafts through `/api/admin/articles/*`; publishing updates Supabase and invalidates tagged Next.js caches.
+Open `/studio/login`, sign in with the configured `ADMIN_EMAIL` and password, then use `/studio/articles/new` or `/studio/articles/[id]`. The editor saves drafts through `/api/admin/articles/*`; publishing updates Supabase and invalidates tagged Next.js caches.
+
+Magic link login is also available as a fallback option on the login page.
 
 `lib/content.ts` is kept as a migration fixture and type source. It is not mutated at runtime. Public reads come from Supabase when env vars are configured and fall back to the fixture only for local build safety when env vars are missing.
 

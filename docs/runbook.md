@@ -42,8 +42,8 @@ Manual smoke checks:
 - `/` loads and shows the Echo Space hero with navigation links (关于, 文章, 阅读, 写作).
 - `/articles` loads and shows the article list with featured hero card and article grid.
 - `/editor` redirects to `/studio/articles/new`.
-- `/studio/login` sends a magic link for the configured admin email.
-- A non-admin email is rejected by `/api/auth/magic-link`.
+- `/studio/login` accepts admin email + password login. Magic link is also available as fallback.
+- A non-admin email is rejected by `/api/auth/login` and `/api/auth/magic-link`.
 - `/studio/articles` requires auth and lists drafts, published articles, and archived records.
 - `/studio/articles/new` saves a draft through `/api/admin/articles`.
 - `/studio/articles/[id]` edits slug, source info, tags, and sections.
@@ -95,7 +95,7 @@ Add a new article:
 
 ```text
 1. Navigate to /studio/login
-2. Log in with ADMIN_EMAIL
+2. Log in with ADMIN_EMAIL and password
 3. Open /studio/articles/new
 4. Save draft
 5. Publish when required fields are complete
@@ -153,7 +153,7 @@ turbopack: {
 
 If `/favicon.ico` returns 404, confirm `app/layout.tsx` points to `/icon.svg` and `public/icon.svg` exists.
 
-If Studio login fails, confirm the Supabase user exists, the email equals `ADMIN_EMAIL`, and Supabase Auth allows email OTP login.
+If Studio login fails, confirm the Supabase user exists, the email equals `ADMIN_EMAIL`, and the password is correct. For magic link fallback, confirm Supabase Auth allows email OTP login and the Redirect URLs whitelist includes the production domain.
 
 If public pages show fixture content after cutover, confirm `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` are all present in the runtime environment.
 
@@ -169,3 +169,6 @@ On 2026-05-02:
 - `npm run seed:articles` imported 2 fixture articles.
 - `npm run lint` passed.
 - `npm run build` passed.
+- Login changed from magic-link-only to password-primary + magic-link-fallback.
+- Supabase admin user has password set for email+password login.
+- Vercel environment variables configured for production deployment.

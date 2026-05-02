@@ -37,8 +37,9 @@ Main fields:
 
 ## Auth And Admin Guard
 
-Supabase Auth sends an email magic link. `ADMIN_EMAIL` gates access to the single configured admin account.
+Supabase Auth supports password login (primary) and email magic link (fallback). `ADMIN_EMAIL` gates access to the single configured admin account.
 
+- `/api/auth/login` authenticates with email + password via Supabase password grant.
 - `/api/auth/magic-link` sends the OTP email only for `ADMIN_EMAIL`.
 - `/studio/auth/callback` reads Supabase tokens from the URL hash and posts them to `/api/auth/session`.
 - `/api/auth/session` verifies the Supabase user and sets HttpOnly cookies.
@@ -113,7 +114,7 @@ Core reusable components:
 /studio/articles/new app/studio/articles/new/page.tsx            (admin)
 /studio/articles/[id] app/studio/articles/[id]/page.tsx          (admin)
 /api/admin/articles  app/api/admin/articles/route.ts             (admin API)
-/api/auth/*          app/api/auth/*                              (auth API)
+/api/auth/*          app/api/auth/*                              (auth API: login, magic-link, session, logout)
 /api/articles        app/api/articles/route.ts                   (410 compatibility)
 /content/[slug]      app/content/[slug]/page.tsx                 (published content)
 /content/echo-space  app/content/echo-space/page.tsx             (legacy redirect)

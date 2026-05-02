@@ -9,7 +9,7 @@ Echo Space is a small personal website in `/Users/echo/Documents/echo_space`.
 - Admin routes: `/studio`, `/studio/login`, `/studio/articles`, `/studio/articles/new`, `/studio/articles/[id]`.
 - Compatibility routes: `/editor` redirects to `/studio/articles/new`; `/api/articles` returns 410 and no longer writes files.
 - Admin APIs: `/api/admin/articles`, `/api/admin/articles/[id]`, `/api/admin/articles/[id]/publish`, `/api/admin/articles/[id]/unpublish`.
-- Auth APIs: `/api/auth/magic-link`, `/api/auth/session`, `/api/auth/logout`.
+- Auth APIs: `/api/auth/login`, `/api/auth/magic-link`, `/api/auth/session`, `/api/auth/logout`.
 - Runtime content source: Supabase `articles` table. `lib/content.ts` remains only for types, fixtures, `topicTags`, and local fallback when env vars are missing.
 - Design system: Neo-brutalism with hard black borders, hard offset shadows, cream canvas, red/yellow/violet accents, sticker rotations, and a CSS font stack preferring Space Grotesk.
 
@@ -66,3 +66,6 @@ On 2026-05-02:
 - `npm run seed:articles` imported 2 fixture articles into Supabase.
 - REST verification returned published rows for `horizontal-vertical-ai-research` and `hermes-weixin`.
 - Routes verified during the Supabase cutover: `/`, `/articles`, `/editor`, `/studio/login`, `/studio/articles`, `/content/horizontal-vertical-ai-research`, `/content/echo-space`, `/api/articles`.
+- Login changed from magic-link-only to password-primary + magic-link-fallback.
+- Supabase admin user has password set for email+password login.
+- Vercel environment variables configured for production deployment.
