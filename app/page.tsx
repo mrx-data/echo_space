@@ -6,7 +6,8 @@ import { NeoCard } from "@/components/neo-card";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { StickerBadge } from "@/components/sticker-badge";
-import { featuredArticle, topicTags } from "@/lib/content";
+import { getFeaturedArticle } from "@/lib/articles-db";
+import { topicTags } from "@/lib/content";
 
 const signals = [
   { label: "观察", icon: Eye, tone: "bg-neo-muted" },
@@ -51,8 +52,9 @@ function SignalPoster() {
   );
 }
 
-export default function HomePage() {
-  const articleHref = `/content/${featuredArticle.slug}`;
+export default async function HomePage() {
+  const featuredArticle = await getFeaturedArticle();
+  const articleHref = featuredArticle ? `/content/${featuredArticle.slug}` : "/articles";
 
   return (
     <>
@@ -152,7 +154,7 @@ export default function HomePage() {
               <div className="neo-halftone min-h-72 border-b-4 border-black bg-neo-accent p-8 md:border-b-0 md:border-r-4">
                 <div className="flex h-full flex-col justify-between gap-8">
                   <div className="flex flex-wrap gap-3">
-                    {featuredArticle.tags.slice(0, 3).map((tag) => (
+                    {(featuredArticle?.tags ?? []).slice(0, 3).map((tag) => (
                       <StickerBadge tone="white" key={tag}>
                         {tag}
                       </StickerBadge>
@@ -160,17 +162,17 @@ export default function HomePage() {
                   </div>
                   <div className="rotate-[-2deg] border-4 border-black bg-white p-5 shadow-[8px_8px_0_0_#000]">
                     <MessageSquareText aria-hidden="true" className="mb-4 h-10 w-10 stroke-[4]" />
-                    <p className="text-2xl font-black leading-tight">“{featuredArticle.highlight}”</p>
+                    <p className="text-2xl font-black leading-tight">“{featuredArticle?.highlight ?? "新的回声会从这里出现。"}”</p>
                   </div>
                 </div>
               </div>
               <div className="bg-white p-7 sm:p-10">
                 <div className="mb-5 flex flex-wrap gap-3 text-sm font-black uppercase tracking-[0.14em]">
-                  <span className="border-4 border-black bg-neo-secondary px-3 py-2">{featuredArticle.date}</span>
-                  <span className="border-4 border-black bg-neo-muted px-3 py-2">{featuredArticle.readingTime}</span>
+                  <span className="border-4 border-black bg-neo-secondary px-3 py-2">{featuredArticle?.date ?? "待发布"}</span>
+                  <span className="border-4 border-black bg-neo-muted px-3 py-2">{featuredArticle?.readingTime ?? "Echo Space"}</span>
                 </div>
-                <h3 className="text-4xl font-black leading-none tracking-[0] sm:text-5xl">{featuredArticle.title}</h3>
-                <p className="mt-5 text-xl font-bold leading-snug">{featuredArticle.excerpt}</p>
+                <h3 className="text-4xl font-black leading-none tracking-[0] sm:text-5xl">{featuredArticle?.title ?? "还没有已发布文章"}</h3>
+                <p className="mt-5 text-xl font-bold leading-snug">{featuredArticle?.excerpt ?? "发布第一篇文章后，这里会自动变成最新内容入口。"}</p>
                 <NeoButton href={articleHref} variant="secondary" className="mt-8">
                   进入文章
                 </NeoButton>

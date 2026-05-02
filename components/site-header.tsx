@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { Menu, PenLine } from "lucide-react";
 import { NeoButton } from "@/components/neo-button";
-import { featuredArticle } from "@/lib/content";
+import { getFeaturedArticle } from "@/lib/articles-db";
 
-export function SiteHeader() {
-  const articleHref = `/content/${featuredArticle.slug}`;
+export async function SiteHeader() {
+  const featuredArticle = await getFeaturedArticle();
+  const articleHref = featuredArticle ? `/content/${featuredArticle.slug}` : "/articles";
 
   return (
     <header className="sticky top-0 z-50 border-b-4 border-black bg-neo-bg">
@@ -27,7 +28,7 @@ export function SiteHeader() {
             阅读
           </NeoButton>
           <Link
-            href="/editor"
+            href="/studio/articles/new"
             className="inline-flex min-h-12 items-center gap-2 border-4 border-black bg-neo-accent px-4 py-2 text-sm font-black uppercase tracking-[0.14em] shadow-[5px_5px_0_0_#000] transition duration-100 ease-linear hover:-translate-y-0.5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
           >
             <PenLine aria-hidden="true" className="h-4 w-4 stroke-[4]" />

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ArticlePage } from "@/components/article-page";
-import { articles, getArticleBySlug } from "@/lib/content";
+import { articles as fixtureArticles } from "@/lib/content";
+import { getPublishedArticleBySlug, isSupabaseConfigured } from "@/lib/articles-db";
 
 type ArticleRouteProps = {
   params: Promise<{
@@ -10,12 +11,16 @@ type ArticleRouteProps = {
 };
 
 export function generateStaticParams() {
-  return articles.map((article) => ({ slug: article.slug }));
+  if (isSupabaseConfigured()) {
+    return [];
+  }
+
+  return fixtureArticles.map((article) => ({ slug: article.slug }));
 }
 
 export async function generateMetadata({ params }: ArticleRouteProps): Promise<Metadata> {
   const { slug } = await params;
-  const article = getArticleBySlug(slug);
+  const article = await getPublishedArticleBySlug(slug);
 
   if (!article) {
     return {
@@ -31,7 +36,7 @@ export async function generateMetadata({ params }: ArticleRouteProps): Promise<M
 
 export default async function ArticleSlugPage({ params }: ArticleRouteProps) {
   const { slug } = await params;
-  const article = getArticleBySlug(slug);
+  const article = await getPublishedArticleBySlug(slug);
 
   if (!article) {
     notFound();

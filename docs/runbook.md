@@ -26,34 +26,58 @@ Manual smoke checks:
 
 - `/` loads and shows the Echo Space hero with navigation links (关于, 文章, 阅读, 写作).
 - `/articles` loads and shows the article list with featured hero card and article grid.
-- `/editor` loads the article editor form with live preview panel.
+- `/editor` redirects to `/studio/articles/new`.
+- `/studio/login` sends a magic link for the configured admin email.
+- A non-admin email is rejected by `/api/auth/magic-link`.
+- `/studio/articles` requires auth and lists drafts, published articles, and archived records.
+- `/studio/articles/new` saves a draft through `/api/admin/articles`.
+- `/studio/articles/[id]` edits slug, source info, tags, and sections.
+- Publishing makes the article visible on `/`, `/articles`, and `/content/[slug]`.
+- Unpublishing removes the article from public pages.
+- Archiving removes the article from public pages and keeps it in Studio as `archived`.
 - Clicking an article card navigates to `/content/{slug}` and shows the full article.
-- `/content/echo-space` still renders the current featured article as a legacy URL.
+- `/content/echo-space` redirects to the current featured article.
 - The "全部文章" link in the footer navigates to `/articles`.
-- The "写作" button in the header navigates to `/editor`.
+- The "写作" button in the header navigates to `/studio/articles/new`.
 - Mobile width keeps CTA buttons and article text readable without overlap.
 
 ## Common Tasks
 
-Add a new article (via editor):
+Create the Supabase table:
 
-```text
-1. Navigate to /editor
-2. Fill in title, slug, tags, excerpt, highlight, and sections
-3. Click "保存文章"
-4. Restart dev server (or rebuild) to see the new article at /content/{slug}
+```bash
+# Run supabase/schema.sql in the Supabase SQL editor.
 ```
 
-Add a new article (manual):
+Configure env vars:
 
 ```text
-Push a new article object into the `articles` array in lib/content.ts.
+NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY
+ADMIN_EMAIL
+```
+
+Seed existing file content:
+
+```bash
+npm run seed:articles
+```
+
+Add a new article:
+
+```text
+1. Navigate to /studio/login
+2. Log in with ADMIN_EMAIL
+3. Open /studio/articles/new
+4. Save draft
+5. Publish when required fields are complete
 ```
 
 Change article content:
 
 ```text
-lib/content.ts
+Use /studio/articles/[id].
 ```
 
 Change visual tokens or global patterns:
@@ -73,20 +97,20 @@ Change route-level layout:
 ```text
 app/page.tsx
 app/articles/page.tsx
-app/editor/page.tsx
+app/studio/
 app/content/[slug]/page.tsx
 app/content/echo-space/page.tsx
 ```
 
 ## Troubleshooting
 
-If `next dev` fails with a Turbopack Google font module resolution error, use the project script:
+Use the project script for local development:
 
 ```bash
 npm run dev
 ```
 
-The script runs:
+The script runs webpack dev mode:
 
 ```bash
 next dev --webpack
@@ -102,8 +126,10 @@ turbopack: {
 
 If `/favicon.ico` returns 404, confirm `app/layout.tsx` points to `/icon.svg` and `public/icon.svg` exists.
 
-If the editor "保存文章" button fails, check the terminal running `npm run dev` for error output from the API route. Common cause: `lib/content.ts` has a syntax error from a previous save.
+If Studio login fails, confirm the Supabase user exists, the email equals `ADMIN_EMAIL`, and Supabase Auth allows email OTP login.
 
-## Environment Variables
+If public pages show fixture content after cutover, confirm `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` are all present in the runtime environment.
 
-No environment variables are required in v1.
+If publish fails, check the article has `slug`, `title`, `excerpt`, `highlight`, and at least one section with heading and body.
+
+If a changed slug still serves stale content, confirm mutation routes are calling `revalidateTag` and that the old slug was saved before the patch.

@@ -1,13 +1,5 @@
 import type { Metadata } from "next";
-import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
-  variable: "--font-space-grotesk",
-  display: "block",
-});
 
 export const metadata: Metadata = {
   title: {
@@ -26,7 +18,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-CN" className={spaceGrotesk.variable} data-scroll-behavior="smooth">
+    <html lang="zh-CN" data-scroll-behavior="smooth">
       <body>{children}</body>
     </html>
   );

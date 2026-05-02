@@ -2,36 +2,59 @@
 
 ## Summary
 
-Echo Space is a personal site built with the Next.js App Router. It has a client-side article editor with live preview, a static article list, and statically prerendered article detail pages. The only API route is `POST /api/articles`, which appends new articles to the content source file.
+Echo Space is a personal site built with the Next.js App Router and a Supabase-backed article CMS. Next.js is the BFF layer: public pages and admin mutations go through Server Components or Route Handlers, and the browser never writes directly to Supabase tables.
 
 ## Runtime Model
 
-- Static pages: `/`, `/articles`, `/content/[slug]`, `/content/echo-space`.
-- Client component: `/editor` (interactive form, `"use client"`).
-- API route: `POST /api/articles` — appends a new article object to `lib/content.ts`.
-- All page components except the editor are Server Components.
-- The site is statically prerendered by `next build`.
+- Public pages: `/`, `/articles`, `/content/[slug]`, `/content/echo-space`.
+- Admin pages: `/studio`, `/studio/login`, `/studio/articles`, `/studio/articles/new`, `/studio/articles/[id]`.
+- Compatibility route: `/editor` redirects to `/studio/articles/new`.
+- Admin APIs: `/api/admin/articles/*`.
+- Auth APIs: `/api/auth/magic-link`, `/api/auth/session`, `/api/auth/logout`.
+- All public content reads are server-side. Admin writes use server-side Supabase service credentials.
+- If Supabase env vars are missing, public pages fall back to `lib/content.ts` fixtures so local build verification remains possible before cutover.
 
 ## Content Model
 
-`lib/content.ts` exports the editable content surface:
+Supabase owns runtime article data in the `articles` table defined in `supabase/schema.sql`.
 
-- `articles: Article[]` — the full list of published articles.
-- `featuredArticle` — backward-compatible alias for `articles[0]`.
-- `getArticleBySlug(slug)` — look up any article by slug.
-- `topicTags` — homepage topic chips.
+Main fields:
 
-Each `Article` has: `slug`, `title`, `date`, `readingTime`, `tags`, `excerpt`, `highlight`, `source` (title, author, url), and `sections` (heading, body[], callout?).
+- `id uuid primary key`
+- `slug text unique not null`
+- `title`, `excerpt`, `highlight`, `reading_time`, `date`
+- `status` checked against `draft`, `published`, `archived`
+- `tags text[]`
+- `source_title`, `source_author`, `source_url`
+- `sections jsonb`, shaped as `{ heading, body[], callout? }[]`
+- timestamps and `author_user_id`
 
-Article routes are generated from the `articles` array via `generateStaticParams()` in `app/content/[slug]/page.tsx`. The `ArticlePage` component accepts an `article` prop.
+`lib/articles-db.ts` maps Supabase rows to the existing article render shape. `lib/content.ts` remains as fixtures for migration and build fallback, plus `topicTags`.
 
-## Editor
+## Auth And Admin Guard
 
-The `/editor` page is a `"use client"` component that:
+Supabase Auth sends an email magic link. `ADMIN_EMAIL` gates access to the single configured admin account.
 
-1. Renders a form for article metadata (title, slug, date, readingTime, tags, excerpt, highlight, source) and dynamic sections (heading, body paragraphs, callout).
-2. Shows a live preview panel (desktop) using the `ArticlePreview` component, which mirrors the site's Neo-brutalist style.
-3. On save, sends `POST /api/articles` which appends the article to `lib/content.ts` via Node.js `fs`.
+- `/api/auth/magic-link` sends the OTP email only for `ADMIN_EMAIL`.
+- `/studio/auth/callback` reads Supabase tokens from the URL hash and posts them to `/api/auth/session`.
+- `/api/auth/session` verifies the Supabase user and sets HttpOnly cookies.
+- `requireAdminPage()` protects Studio pages.
+- `requireAdminApi()` protects `/api/admin/*`.
+
+## Studio
+
+The Studio editor is a client component that:
+
+1. Renders metadata, source fields, tags, and dynamic section editing.
+2. Shows a live preview panel using `ArticlePreview`.
+3. Saves drafts through `POST /api/admin/articles` or `PATCH /api/admin/articles/[id]`.
+4. Publishes, unpublishes, and archives through explicit admin endpoints.
+
+`/api/articles` no longer mutates files; it returns a 410 compatibility error.
+
+## Caching
+
+Public list reads are tagged with `articles`. Public detail reads are tagged with `articles` and `article:{slug}`. After create, update, publish, unpublish, or archive, the admin mutation invalidates `articles`, the current slug tag, and the old slug tag when a slug changes.
 
 ## UI System
 
@@ -62,16 +85,23 @@ Core reusable components:
 ```text
 /                    app/page.tsx                  (static)
 /articles            app/articles/page.tsx         (static)
-/editor              app/editor/page.tsx           (client)
-/api/articles        app/api/articles/route.ts     (dynamic, POST)
-/content/[slug]      app/content/[slug]/page.tsx   (static, SSG)
-/content/echo-space  app/content/echo-space/page.tsx (static)
+/editor              app/editor/page.tsx                         (redirect)
+/studio              app/studio/page.tsx                         (redirect)
+/studio/login        app/studio/login/page.tsx                   (public login)
+/studio/articles     app/studio/articles/page.tsx                (admin)
+/studio/articles/new app/studio/articles/new/page.tsx            (admin)
+/studio/articles/[id] app/studio/articles/[id]/page.tsx          (admin)
+/api/admin/articles  app/api/admin/articles/route.ts             (admin API)
+/api/auth/*          app/api/auth/*                              (auth API)
+/api/articles        app/api/articles/route.ts                   (410 compatibility)
+/content/[slug]      app/content/[slug]/page.tsx                 (published content)
+/content/echo-space  app/content/echo-space/page.tsx             (legacy redirect)
 ```
 
 ## Build And Font Behavior
 
-`app/layout.tsx` uses `next/font/google` to load Space Grotesk. `npm run build` works with Next 16 production build.
+`app/globals.css` defines a CSS font stack that prefers Space Grotesk and falls back to system sans fonts. The project avoids `next/font/google` so `npm run build` does not need network access to Google Fonts.
 
-`npm run dev` uses webpack dev mode because local verification on 2026-05-02 showed Turbopack dev mode failing to resolve the internal Google font module in this workspace.
+`npm run dev` uses webpack dev mode.
 
 `next.config.ts` sets `turbopack.root = __dirname` to keep Next from selecting an upper-level `/Users/echo/package-lock.json` as the workspace root.

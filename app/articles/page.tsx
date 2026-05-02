@@ -6,14 +6,17 @@ import { MarqueeStrip } from "@/components/marquee-strip";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { StickerBadge } from "@/components/sticker-badge";
-import { articles, topicTags } from "@/lib/content";
+import { getPublishedArticles } from "@/lib/articles-db";
+import { topicTags } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "全部文章",
   description: "Echo Space 中所有已发布的文章、笔记与研究。",
 };
 
-export default function ArticlesPage() {
+export default async function ArticlesPage() {
+  const articles = await getPublishedArticles();
+
   return (
     <>
       <SiteHeader />

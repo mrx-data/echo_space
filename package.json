@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev --webpack",
     "build": "next build",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "seed:articles": "node scripts/seed-supabase-articles.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
