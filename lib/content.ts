@@ -4,6 +4,9 @@ export type ArticleSection = {
   callout?: string;
 };
 
+export type ArticleFontFamily = "sans" | "serif" | "mono";
+export type ArticleFontSize = "sm" | "base" | "lg";
+
 export type Article = {
   slug: string;
   title: string;
@@ -12,6 +15,8 @@ export type Article = {
   tags: string[];
   excerpt: string;
   highlight: string;
+  fontFamily?: ArticleFontFamily;
+  fontSize?: ArticleFontSize;
   source: {
     title: string;
     author: string;

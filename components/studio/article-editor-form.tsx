@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { ArticlePreview } from "@/components/article-preview";
 import type { ArticleDraftInput, ArticleRow } from "@/lib/articles-db";
+import type { ArticleFontFamily, ArticleFontSize } from "@/lib/content";
 
 type SectionForm = {
   heading: string;
@@ -37,6 +38,8 @@ type ArticleForm = {
   tags: string;
   excerpt: string;
   highlight: string;
+  fontFamily: ArticleFontFamily;
+  fontSize: ArticleFontSize;
   sourceTitle: string;
   sourceAuthor: string;
   sourceUrl: string;
@@ -59,6 +62,8 @@ const emptyForm: ArticleForm = {
   tags: "",
   excerpt: "",
   highlight: "",
+  fontFamily: "sans",
+  fontSize: "base",
   sourceTitle: "",
   sourceAuthor: "",
   sourceUrl: "",
@@ -86,6 +91,8 @@ function formFromInitial(initial?: ArticleDraftInput): ArticleForm {
     tags: initial.tags?.join(", ") ?? "",
     excerpt: initial.excerpt ?? "",
     highlight: initial.highlight ?? "",
+    fontFamily: initial.fontFamily ?? "sans",
+    fontSize: initial.fontSize ?? "base",
     sourceTitle: initial.source?.title ?? "",
     sourceAuthor: initial.source?.author ?? "",
     sourceUrl: initial.source?.url ?? "",
@@ -109,6 +116,40 @@ export function ArticleEditorForm({ articleId, status = "draft", initial }: Arti
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [showPreview, setShowPreview] = useState(true);
+  const [splitRatio, setSplitRatio] = useState(55);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
+
+  const handleDragStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    isDragging.current = true;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+  }, []);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging.current || !containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const ratio = ((e.clientX - rect.left) / rect.width) * 100;
+      setSplitRatio(Math.min(80, Math.max(25, ratio)));
+    };
+
+    const handleMouseUp = () => {
+      if (isDragging.current) {
+        isDragging.current = false;
+        document.body.style.cursor = "";
+        document.body.style.userSelect = "";
+      }
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, []);
 
   const tags = form.tags
     .split(",")
@@ -121,6 +162,8 @@ export function ArticleEditorForm({ articleId, status = "draft", initial }: Arti
     date: form.date,
     readingTime: form.readingTime,
     tags,
+    fontFamily: form.fontFamily,
+    fontSize: form.fontSize,
     sections: form.sections
       .filter((section) => section.heading || section.body.some((paragraph) => paragraph.trim()))
       .map((section) => ({
@@ -139,6 +182,8 @@ export function ArticleEditorForm({ articleId, status = "draft", initial }: Arti
       tags,
       excerpt: form.excerpt,
       highlight: form.highlight,
+      fontFamily: form.fontFamily,
+      fontSize: form.fontSize,
       source: {
         title: form.sourceTitle,
         author: form.sourceAuthor,
@@ -264,8 +309,8 @@ export function ArticleEditorForm({ articleId, status = "draft", initial }: Arti
   }
 
   return (
-    <div className="mx-auto grid max-w-7xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:px-8">
-      <div className="grid gap-6">
+    <div ref={containerRef} className="mx-auto flex max-w-7xl gap-0 px-4 py-8 sm:px-6 lg:px-8">
+      <div className="grid gap-6 pr-4" style={{ width: showPreview ? `${splitRatio}%` : "100%" }}>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link
             href="/studio/articles"
@@ -376,6 +421,32 @@ export function ArticleEditorForm({ articleId, status = "draft", initial }: Arti
                 className="w-full border-4 border-black bg-neo-bg px-4 py-3 text-base font-bold focus:outline-none focus:ring-4 focus:ring-neo-secondary"
               />
             </label>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="grid gap-1">
+                <span className="text-sm font-black uppercase tracking-[0.14em]">正文字体</span>
+                <select
+                  value={form.fontFamily}
+                  onChange={(event) => setForm((prev) => ({ ...prev, fontFamily: event.target.value as ArticleFontFamily }))}
+                  className="w-full border-4 border-black bg-neo-bg px-4 py-3 text-base font-bold focus:outline-none focus:ring-4 focus:ring-neo-secondary"
+                >
+                  <option value="sans">黑体（Sans）</option>
+                  <option value="serif">宋体（Serif）</option>
+                  <option value="mono">等宽（Mono）</option>
+                </select>
+              </label>
+              <label className="grid gap-1">
+                <span className="text-sm font-black uppercase tracking-[0.14em]">正文字号</span>
+                <select
+                  value={form.fontSize}
+                  onChange={(event) => setForm((prev) => ({ ...prev, fontSize: event.target.value as ArticleFontSize }))}
+                  className="w-full border-4 border-black bg-neo-bg px-4 py-3 text-base font-bold focus:outline-none focus:ring-4 focus:ring-neo-secondary"
+                >
+                  <option value="sm">小（14px）</option>
+                  <option value="base">标准（16px）</option>
+                  <option value="lg">大（18px）</option>
+                </select>
+              </label>
+            </div>
           </div>
         </div>
 
@@ -457,17 +528,24 @@ export function ArticleEditorForm({ articleId, status = "draft", initial }: Arti
                   />
                   {section.body.map((paragraph, paragraphIndex) => (
                     <div className="flex gap-2" key={paragraphIndex}>
-                      <textarea
-                        value={paragraph}
-                        onChange={(event) => {
-                          const nextBody = [...section.body];
-                          nextBody[paragraphIndex] = event.target.value;
-                          updateSection(index, "body", nextBody);
-                        }}
-                        placeholder={`段落 ${paragraphIndex + 1}`}
-                        rows={2}
-                        className="min-h-[3rem] w-full resize-none border-4 border-black bg-white px-3 py-2 text-sm font-bold placeholder:opacity-40 focus:outline-none focus:ring-4 focus:ring-neo-secondary"
-                      />
+                      <div className="flex-1">
+                        <textarea
+                          value={paragraph}
+                          onChange={(event) => {
+                            const nextBody = [...section.body];
+                            nextBody[paragraphIndex] = event.target.value;
+                            updateSection(index, "body", nextBody);
+                          }}
+                          placeholder={`段落 ${paragraphIndex + 1}（支持 Markdown）`}
+                          rows={3}
+                          className="min-h-[4.5rem] w-full resize-none border-4 border-black bg-white px-3 py-2 font-mono text-sm font-bold placeholder:opacity-40 focus:outline-none focus:ring-4 focus:ring-neo-secondary"
+                        />
+                        {paragraphIndex === 0 && section.body.length === 1 && !paragraph && (
+                          <p className="mt-1 text-[10px] font-bold opacity-40">
+                            **粗体** *斜体* `代码` [链接](url) - 列表 &gt; 引用 ```代码块```
+                          </p>
+                        )}
+                      </div>
                       {section.body.length > 1 ? (
                         <button
                           type="button"
@@ -558,23 +636,49 @@ export function ArticleEditorForm({ articleId, status = "draft", initial }: Arti
         )}
       </div>
 
-      <div className="hidden lg:block">
-        <div className="sticky top-28">
-          <button
-            type="button"
-            onClick={() => setShowPreview((prev) => !prev)}
-            className="mb-3 inline-flex items-center gap-2 border-4 border-black bg-neo-muted px-4 py-2 text-xs font-black uppercase tracking-[0.18em] shadow-[4px_4px_0_0_#000] transition duration-100 hover:-translate-y-0.5"
-          >
-            {showPreview ? <EyeOff aria-hidden="true" className="h-4 w-4 stroke-[4]" /> : <Eye aria-hidden="true" className="h-4 w-4 stroke-[4]" />}
-            {showPreview ? "隐藏预览" : "显示预览"}
-          </button>
-          {showPreview && (
+      {/* Drag handle */}
+      {showPreview && (
+        <div
+          onMouseDown={handleDragStart}
+          className="hidden w-3 shrink-0 cursor-col-resize items-center justify-center bg-neo-bg transition-colors hover:bg-neo-secondary lg:flex"
+        >
+          <div className="h-12 w-1 rounded-full border-2 border-black bg-black" />
+        </div>
+      )}
+
+      {/* Preview panel */}
+      {showPreview && (
+        <div className="hidden lg:block" style={{ width: `${100 - splitRatio}%` }}>
+          <div className="sticky top-28">
+            <div className="mb-3 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowPreview((prev) => !prev)}
+                className="inline-flex items-center gap-2 border-4 border-black bg-neo-muted px-4 py-2 text-xs font-black uppercase tracking-[0.18em] shadow-[4px_4px_0_0_#000] transition duration-100 hover:-translate-y-0.5"
+              >
+                <EyeOff aria-hidden="true" className="h-4 w-4 stroke-[4]" />
+                隐藏预览
+              </button>
+              <span className="text-xs font-bold opacity-40">拖拽中间分隔条调整比例</span>
+            </div>
             <div className="max-h-[calc(100vh-10rem)] overflow-y-auto border-4 border-black bg-white shadow-[12px_12px_0_0_#000]">
               <ArticlePreview article={previewArticle} />
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Show preview button when hidden */}
+      {!showPreview && (
+        <button
+          type="button"
+          onClick={() => setShowPreview(true)}
+          className="fixed right-6 top-28 z-40 inline-flex items-center gap-2 border-4 border-black bg-neo-muted px-4 py-2 text-xs font-black uppercase tracking-[0.18em] shadow-[4px_4px_0_0_#000] transition duration-100 hover:-translate-y-0.5"
+        >
+          <Eye aria-hidden="true" className="h-4 w-4 stroke-[4]" />
+          显示预览
+        </button>
+      )}
     </div>
   );
 }

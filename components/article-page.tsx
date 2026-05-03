@@ -1,17 +1,37 @@
 import Link from "next/link";
 import { ArrowLeft, CalendarDays, Clock3, Quote, Sparkles, Star } from "lucide-react";
 import { MarqueeStrip } from "@/components/marquee-strip";
+import { MarkdownText } from "@/components/markdown-text";
 import { NeoButton } from "@/components/neo-button";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { StickerBadge } from "@/components/sticker-badge";
-import type { Article } from "@/lib/content";
+import type { Article, ArticleFontFamily, ArticleFontSize } from "@/lib/content";
 
 type ArticlePageProps = {
   article: Article;
 };
 
+function getFontClass(family?: ArticleFontFamily): string {
+  switch (family) {
+    case "serif": return "article-font-serif";
+    case "mono": return "article-font-mono";
+    default: return "article-font-sans";
+  }
+}
+
+function getSizeClass(size?: ArticleFontSize): string {
+  switch (size) {
+    case "sm": return "article-text-sm";
+    case "lg": return "article-text-lg";
+    default: return "article-text-base";
+  }
+}
+
 export function ArticlePage({ article }: ArticlePageProps) {
+  const fontClass = getFontClass(article.fontFamily);
+  const sizeClass = getSizeClass(article.fontSize);
+
   return (
     <>
       <SiteHeader />
@@ -50,7 +70,7 @@ export function ArticlePage({ article }: ArticlePageProps) {
 
           <MarqueeStrip items={article.tags} tone="black" />
 
-          <div className="bg-neo-bg px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
+          <div className={`bg-neo-bg px-4 py-14 sm:px-6 sm:py-16 lg:px-8 ${fontClass} ${sizeClass}`}>
             <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[220px_1fr]">
               <aside className="lg:sticky lg:top-32 lg:self-start">
                 <div className="border-4 border-black bg-white p-5 shadow-[7px_7px_0_0_#000]">
@@ -82,9 +102,11 @@ export function ArticlePage({ article }: ArticlePageProps) {
                     </div>
                     <div className="grid gap-5 p-6 sm:p-8">
                       {section.body.map((paragraph) => (
-                        <p className="text-xl font-bold leading-relaxed" key={paragraph}>
-                          {paragraph}
-                        </p>
+                        <MarkdownText
+                          content={paragraph}
+                          className="text-xl font-bold leading-relaxed"
+                          key={paragraph}
+                        />
                       ))}
                       {section.callout ? (
                         <blockquote className="mt-2 rotate-[-1deg] border-4 border-black bg-neo-secondary p-5 text-2xl font-black leading-snug shadow-[7px_7px_0_0_#000]">

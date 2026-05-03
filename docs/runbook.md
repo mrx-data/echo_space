@@ -44,9 +44,9 @@ Manual smoke checks:
 - `/editor` redirects to `/studio/articles/new`.
 - `/studio/login` accepts admin email + password login. Magic link is also available as fallback.
 - A non-admin email is rejected by `/api/auth/login` and `/api/auth/magic-link`.
-- `/studio/articles` requires auth and lists drafts, published articles, and archived records.
-- `/studio/articles/new` saves a draft through `/api/admin/articles`.
-- `/studio/articles/[id]` edits slug, source info, tags, and sections.
+- `/studio/articles` requires auth and lists drafts, published articles, and archived records. Each row shows an edit link and a permanent delete button with confirmation.
+- `/studio/articles/new` saves a draft through `/api/admin/articles`. The preview panel can be toggled with the 显示预览/隐藏预览 button.
+- `/studio/articles/[id]` edits slug, source info, tags, sections, and provides a permanent delete button at the bottom.
 - Publishing makes the article visible on `/`, `/articles`, and `/content/[slug]`.
 - Unpublishing removes the article from public pages.
 - Archiving removes the article from public pages and keeps it in Studio as `archived`.
@@ -107,6 +107,15 @@ Change article content:
 Use /studio/articles/[id].
 ```
 
+Permanently delete an article:
+
+```text
+Use the "永久删除" button at the bottom of /studio/articles/[id],
+or the "删除" button on each row in /studio/articles.
+Both require a browser confirmation dialog before the deletion is sent.
+The article is removed from Supabase permanently (not archived).
+```
+
 Change visual tokens or global patterns:
 
 ```text
@@ -161,6 +170,8 @@ If publish fails, check the article has `slug`, `title`, `excerpt`, `highlight`,
 
 If a changed slug still serves stale content, confirm mutation routes are calling `revalidateTag` and that the old slug was saved before the patch.
 
+If Tailwind utility color classes like `text-white` appear to have no effect on `a` elements, check that `globals.css` does not define `a { color: ... }` outside a `@layer` block. Non-layered CSS rules override all `@layer utilities` rules. The fix is to move the rule into `@layer base`.
+
 ## Known State
 
 On 2026-05-02:
@@ -172,3 +183,6 @@ On 2026-05-02:
 - Login changed from magic-link-only to password-primary + magic-link-fallback.
 - Supabase admin user has password set for email+password login.
 - Vercel environment variables configured for production deployment.
+- Permanent delete feature added: `permanentlyDeleteArticle()` in `lib/articles-db.ts`, `DELETE ?permanent=true` API, delete buttons in editor and list page with `window.confirm` confirmation.
+- Editor preview panel is collapsible via a toggle button.
+- CSS fix: `a { color: inherit }` moved into `@layer base` in `globals.css` to prevent Tailwind utility class overrides.

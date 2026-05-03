@@ -37,14 +37,15 @@ Configure these locally in `.env.local` and in Vercel. Never commit real secret 
 - `package.json` sets `dev` to `next dev --webpack`.
 - `next.config.ts` sets `turbopack.root` to `__dirname` so Next does not infer `/Users/echo` as the workspace root because of an upper-level lockfile.
 - `app/layout.tsx` declares `/icon.svg`; fonts are handled through the CSS font stack in `app/globals.css`.
-- `app/globals.css` owns design tokens, texture utilities, custom animations, text outline styling, and reduced-motion behavior.
+- `app/globals.css` owns design tokens, texture utilities, custom animations, text outline styling, and reduced-motion behavior. All global `a` rules are inside `@layer base` so Tailwind utility classes like `text-white` are not overridden.
 - `supabase/schema.sql` defines the `articles` table and `updated_at` trigger.
 - `scripts/seed-supabase-articles.mjs` upserts the current `lib/content.ts` fixture articles into Supabase.
 - `lib/supabase.ts` contains direct Supabase REST/Auth helpers; no Supabase SDK dependency is installed.
-- `lib/articles-db.ts` maps Supabase rows to the article render shape, validates drafts/publish requests, and revalidates `articles` plus `article:{slug}` tags after mutations.
+- `lib/articles-db.ts` maps Supabase rows to the article render shape, validates drafts/publish requests, revalidates `articles` plus `article:{slug}` tags after mutations, and exports `permanentlyDeleteArticle()` for hard deletion.
 - `lib/auth.ts` reads Supabase sessions from HttpOnly cookies and exposes `requireAdminPage()` and `requireAdminApi()`.
-- Public pages only query `published` articles. Draft, publish, unpublish, and archive actions go through server-side admin APIs using the service role key.
-- The Studio editor client component lives at `components/studio/article-editor-form.tsx`.
+- Public pages only query `published` articles. Draft, publish, unpublish, archive, and permanent-delete actions go through server-side admin APIs using the service role key.
+- The Studio editor client component lives at `components/studio/article-editor-form.tsx`. It uses per-button action tracking (`activeAction` string) so only the clicked button shows a spinner. The preview panel is collapsible via a `showPreview` toggle.
+- `components/studio/delete-article-button.tsx` is a standalone client component used on the article list page for permanent delete with `window.confirm` confirmation.
 - `app/editor/page.tsx` is only a redirect.
 
 ## Editing Guidelines
@@ -69,3 +70,6 @@ On 2026-05-02:
 - Login changed from magic-link-only to password-primary + magic-link-fallback.
 - Supabase admin user has password set for email+password login.
 - Vercel environment variables configured for production deployment.
+- Permanent delete feature verified: `permanentlyDeleteArticle()`, `DELETE ?permanent=true`, editor and list delete buttons with confirmation.
+- Editor preview toggle verified: collapsible preview panel with 显示/隐藏 button.
+- CSS `@layer base` fix verified: `text-white` on `a` elements renders correctly.

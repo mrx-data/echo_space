@@ -14,6 +14,8 @@ create table if not exists public.articles (
   source_author text null,
   source_url text null,
   sections jsonb not null default '[]',
+  font_family text null check (font_family in ('sans', 'serif', 'mono')),
+  font_size text null check (font_size in ('sm', 'base', 'lg')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   published_at timestamptz null,

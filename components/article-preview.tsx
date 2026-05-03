@@ -1,4 +1,6 @@
 import { CalendarDays, Clock3, Quote, Star } from "lucide-react";
+import { MarkdownText } from "@/components/markdown-text";
+import type { ArticleFontFamily, ArticleFontSize } from "@/lib/content";
 
 type Section = {
   heading: string;
@@ -14,12 +16,33 @@ type ArticlePreviewProps = {
     readingTime: string;
     tags: string[];
     sections: Section[];
+    fontFamily?: ArticleFontFamily;
+    fontSize?: ArticleFontSize;
   };
 };
 
+function getFontClass(family?: ArticleFontFamily): string {
+  switch (family) {
+    case "serif": return "article-font-serif";
+    case "mono": return "article-font-mono";
+    default: return "article-font-sans";
+  }
+}
+
+function getSizeClass(size?: ArticleFontSize): string {
+  switch (size) {
+    case "sm": return "article-text-sm";
+    case "lg": return "article-text-lg";
+    default: return "article-text-base";
+  }
+}
+
 export function ArticlePreview({ article }: ArticlePreviewProps) {
+  const fontClass = getFontClass(article.fontFamily);
+  const sizeClass = getSizeClass(article.fontSize);
+
   return (
-    <div className="pointer-events-none select-none">
+    <div className={`pointer-events-none select-none ${fontClass} ${sizeClass}`}>
       {/* Article header */}
       <header className="neo-noise border-b-4 border-black bg-neo-secondary px-5 py-8">
         <div className="mb-3 inline-flex border-4 border-black bg-neo-accent px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] shadow-[3px_3px_0_0_#000]">
@@ -107,9 +130,11 @@ export function ArticlePreview({ article }: ArticlePreviewProps) {
                       <p className="text-sm font-bold italic opacity-50">章节正文会显示在这里</p>
                     ) : (
                       section.body.filter((p) => p.trim()).map((paragraph, pi) => (
-                        <p className="text-sm font-bold leading-relaxed" key={pi}>
-                          {paragraph}
-                        </p>
+                        <MarkdownText
+                          content={paragraph}
+                          className="text-sm font-bold leading-relaxed"
+                          key={pi}
+                        />
                       ))
                     )}
                     {section.callout ? (

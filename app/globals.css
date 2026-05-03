@@ -141,3 +141,224 @@ a {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ── Article Font Families ── */
+
+.article-font-sans {
+  font-family: var(--font-space-grotesk), "Space Grotesk", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+}
+
+.article-font-serif {
+  font-family: "Noto Serif SC", "Source Han Serif SC", "Source Han Serif CN",
+    "Songti SC", "SimSun", Georgia, "Times New Roman", serif;
+}
+
+.article-font-mono {
+  font-family: "JetBrains Mono", "Fira Code", "SF Mono", "Cascadia Code",
+    Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+/* ── Article Font Sizes ── */
+
+.article-text-sm .neo-markdown {
+  font-size: 0.875rem;
+  line-height: 1.75;
+}
+
+.article-text-base .neo-markdown {
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.article-text-lg .neo-markdown {
+  font-size: 1.125rem;
+  line-height: 1.8;
+}
+
+/* ── Markdown Content Styles ── */
+
+.neo-markdown h1,
+.neo-markdown h2,
+.neo-markdown h3,
+.neo-markdown h4 {
+  font-weight: 900;
+  letter-spacing: 0;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+.neo-markdown h1 {
+  font-size: 1.75em;
+  text-transform: uppercase;
+}
+
+.neo-markdown h2 {
+  font-size: 1.4em;
+  text-transform: uppercase;
+}
+
+.neo-markdown h3 {
+  font-size: 1.15em;
+}
+
+.neo-markdown h4 {
+  font-size: 1em;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.neo-markdown p {
+  margin-bottom: 0.75em;
+  font-weight: 700;
+  line-height: inherit;
+}
+
+.neo-markdown p:last-child {
+  margin-bottom: 0;
+}
+
+/* Inline code */
+.neo-markdown code:not(pre code) {
+  border: 3px solid var(--neo-ink);
+  background: var(--neo-secondary);
+  padding: 0.1em 0.35em;
+  font-size: 0.88em;
+  font-weight: 800;
+  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+}
+
+/* Code blocks */
+.neo-markdown pre {
+  border: 4px solid var(--neo-ink);
+  background: var(--neo-ink);
+  color: var(--neo-bg);
+  padding: 1em 1.25em;
+  overflow-x: auto;
+  margin: 1em 0;
+  box-shadow: 6px 6px 0 0 rgba(0, 0, 0, 0.15);
+  font-size: 0.85em;
+  line-height: 1.6;
+}
+
+.neo-markdown pre code {
+  font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+  font-weight: 600;
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* Blockquotes */
+.neo-markdown blockquote {
+  border-left: 6px solid var(--neo-ink);
+  background: var(--neo-secondary);
+  padding: 0.75em 1em;
+  margin: 1em 0;
+  font-weight: 800;
+  box-shadow: 5px 5px 0 0 var(--neo-ink);
+  transform: rotate(-0.5deg);
+}
+
+.neo-markdown blockquote p {
+  margin-bottom: 0;
+}
+
+/* Lists */
+.neo-markdown ul,
+.neo-markdown ol {
+  padding-left: 1.5em;
+  margin: 0.75em 0;
+}
+
+.neo-markdown li {
+  margin-bottom: 0.35em;
+  font-weight: 700;
+  line-height: inherit;
+}
+
+.neo-markdown ul li {
+  list-style-type: "▸ ";
+}
+
+.neo-markdown ol li {
+  list-style-type: decimal;
+}
+
+.neo-markdown li::marker {
+  font-weight: 900;
+}
+
+/* Links */
+.neo-markdown a {
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 3px;
+  font-weight: 800;
+  transition: background 0.1s;
+}
+
+.neo-markdown a:hover {
+  background: var(--neo-secondary);
+}
+
+/* Bold and italic */
+.neo-markdown strong {
+  font-weight: 900;
+}
+
+.neo-markdown em {
+  font-style: italic;
+}
+
+/* Horizontal rules */
+.neo-markdown hr {
+  border: none;
+  border-top: 4px solid var(--neo-ink);
+  margin: 1.5em 0;
+}
+
+/* Images */
+.neo-markdown img {
+  max-width: 100%;
+  border: 4px solid var(--neo-ink);
+  box-shadow: 6px 6px 0 0 var(--neo-ink);
+  margin: 1em 0;
+}
+
+/* Tables */
+.neo-markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 4px solid var(--neo-ink);
+  margin: 1em 0;
+  font-size: 0.9em;
+}
+
+.neo-markdown th,
+.neo-markdown td {
+  border: 3px solid var(--neo-ink);
+  padding: 0.5em 0.75em;
+  text-align: left;
+  font-weight: 700;
+}
+
+.neo-markdown th {
+  background: var(--neo-ink);
+  color: var(--neo-bg);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.85em;
+}
+
+.neo-markdown tr:nth-child(even) td {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* Task lists */
+.neo-markdown input[type="checkbox"] {
+  margin-right: 0.5em;
+  accent-color: var(--neo-ink);
+}

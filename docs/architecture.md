@@ -14,7 +14,7 @@ Echo Space is a personal site built with the Next.js App Router and a Supabase-b
 - Admin pages: `/studio`, `/studio/login`, `/studio/articles`, `/studio/articles/new`, `/studio/articles/[id]`.
 - Compatibility route: `/editor` redirects to `/studio/articles/new`.
 - Admin APIs: `/api/admin/articles/*`.
-- Auth APIs: `/api/auth/magic-link`, `/api/auth/session`, `/api/auth/logout`.
+- Auth APIs: `/api/auth/login`, `/api/auth/magic-link`, `/api/auth/session`, `/api/auth/logout`.
 - All public content reads are server-side. Admin writes use server-side Supabase service credentials.
 - If Supabase env vars are missing, public pages fall back to `lib/content.ts` fixtures so local build verification remains possible.
 
@@ -51,15 +51,16 @@ Supabase Auth supports password login (primary) and email magic link (fallback).
 The Studio editor is a client component that:
 
 1. Renders metadata, source fields, tags, and dynamic section editing.
-2. Shows a live preview panel using `ArticlePreview`.
+2. Shows a collapsible live preview panel using `ArticlePreview`; the toggle button lets the user show or hide the preview.
 3. Saves drafts through `POST /api/admin/articles` or `PATCH /api/admin/articles/[id]`.
 4. Publishes, unpublishes, and archives through explicit admin endpoints.
+5. Permanently deletes articles through `DELETE /api/admin/articles/[id]?permanent=true` with a browser confirmation dialog. The list page (`/studio/articles`) also has a per-row delete button using `DeleteArticleButton`.
 
 `/api/articles` no longer mutates files; it returns a 410 compatibility error.
 
 ## Caching
 
-Public list reads are tagged with `articles`. Public detail reads are tagged with `articles` and `article:{slug}`. After create, update, publish, unpublish, or archive, the admin mutation invalidates `articles`, the current slug tag, and the old slug tag when a slug changes.
+Public list reads are tagged with `articles`. Public detail reads are tagged with `articles` and `article:{slug}`. After create, update, publish, unpublish, archive, or permanent-delete, the admin mutation invalidates `articles`, the current slug tag, and the old slug tag when a slug changes.
 
 ## Deployment Model
 

@@ -1,5 +1,5 @@
 import { revalidateTag } from "next/cache";
-import type { Article, ArticleSection } from "@/lib/content";
+import type { Article, ArticleFontFamily, ArticleFontSize, ArticleSection } from "@/lib/content";
 import { articles as fixtureArticles } from "@/lib/content";
 import { isSupabaseConfigured, supabaseRestFetch } from "@/lib/supabase";
 
@@ -21,6 +21,8 @@ export type ArticleRow = {
   source_author: string | null;
   source_url: string | null;
   sections: ArticleSection[];
+  font_family: ArticleFontFamily | null;
+  font_size: ArticleFontSize | null;
   created_at: string;
   updated_at: string;
   published_at: string | null;
@@ -35,6 +37,8 @@ export type ArticleDraftInput = {
   readingTime?: string;
   date?: string;
   tags?: string[];
+  fontFamily?: ArticleFontFamily;
+  fontSize?: ArticleFontSize;
   source?: {
     title?: string;
     author?: string;
@@ -43,8 +47,29 @@ export type ArticleDraftInput = {
   sections?: ArticleSection[];
 };
 
-const articleSelect =
+const articleSelectFull =
+  "id,slug,title,excerpt,highlight,reading_time,date,status,tags,source_title,source_author,source_url,sections,font_family,font_size,created_at,updated_at,published_at,author_user_id";
+
+const articleSelectLegacy =
   "id,slug,title,excerpt,highlight,reading_time,date,status,tags,source_title,source_author,source_url,sections,created_at,updated_at,published_at,author_user_id";
+
+async function fetchArticles<T>(query: string, options?: { tags?: string[]; noStore?: boolean }): Promise<T> {
+  try {
+    return await supabaseRestFetch<T>(query, options);
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("font_family")) {
+      const fallbackQuery = query.replace(articleSelectFull, articleSelectLegacy);
+      if (fallbackQuery !== query) {
+        return await supabaseRestFetch<T>(fallbackQuery, options);
+      }
+    }
+    throw error;
+  }
+}
+
+function getArticleSelect(): string {
+  return articleSelectFull;
+}
 
 export const ARTICLES_TAG = "articles";
 
@@ -61,6 +86,8 @@ export function rowToArticle(row: ArticleRow): Article {
     tags: row.tags ?? [],
     excerpt: row.excerpt,
     highlight: row.highlight,
+    fontFamily: row.font_family ?? undefined,
+    fontSize: row.font_size ?? undefined,
     source: {
       title: row.source_title ?? "",
       author: row.source_author ?? "",
@@ -79,6 +106,8 @@ export function rowToDraftInput(row: ArticleRow): Required<ArticleDraftInput> {
     readingTime: row.reading_time,
     date: row.date,
     tags: row.tags ?? [],
+    fontFamily: row.font_family ?? "sans",
+    fontSize: row.font_size ?? "base",
     source: {
       title: row.source_title ?? "",
       author: row.source_author ?? "",
@@ -89,6 +118,9 @@ export function rowToDraftInput(row: ArticleRow): Required<ArticleDraftInput> {
 }
 
 export function sanitizeArticleInput(input: ArticleDraftInput) {
+  const validFamilies: ArticleFontFamily[] = ["sans", "serif", "mono"];
+  const validSizes: ArticleFontSize[] = ["sm", "base", "lg"];
+
   return {
     slug: input.slug?.trim() ?? "",
     title: input.title?.trim() ?? "",
@@ -97,6 +129,8 @@ export function sanitizeArticleInput(input: ArticleDraftInput) {
     reading_time: input.readingTime?.trim() || "5 min read",
     date: input.date?.trim() || new Date().toISOString().split("T")[0],
     tags: (input.tags ?? []).map((tag) => tag.trim()).filter(Boolean),
+    font_family: input.fontFamily && validFamilies.includes(input.fontFamily) ? input.fontFamily : null,
+    font_size: input.fontSize && validSizes.includes(input.fontSize) ? input.fontSize : null,
     source_title: input.source?.title?.trim() || null,
     source_author: input.source?.author?.trim() || null,
     source_url: input.source?.url?.trim() || null,
@@ -134,8 +168,8 @@ export async function getPublishedArticles(): Promise<Article[]> {
     return fixtureArticles;
   }
 
-  const rows = await supabaseRestFetch<ArticleRow[]>(
-    `articles?select=${articleSelect}&status=eq.published&order=published_at.desc.nullslast,date.desc`,
+  const rows = await fetchArticles<ArticleRow[]>(
+    `articles?select=${getArticleSelect()}&status=eq.published&order=published_at.desc.nullslast,date.desc`,
     { tags: [ARTICLES_TAG] },
   );
   return rows.map(rowToArticle);
@@ -146,8 +180,8 @@ export async function getFeaturedArticle(): Promise<Article | null> {
     return fixtureArticles[0] ?? null;
   }
 
-  const rows = await supabaseRestFetch<ArticleRow[]>(
-    `articles?select=${articleSelect}&status=eq.published&order=published_at.desc.nullslast,date.desc&limit=1`,
+  const rows = await fetchArticles<ArticleRow[]>(
+    `articles?select=${getArticleSelect()}&status=eq.published&order=published_at.desc.nullslast,date.desc&limit=1`,
     { tags: [ARTICLES_TAG] },
   );
   return rows[0] ? rowToArticle(rows[0]) : null;
@@ -158,23 +192,23 @@ export async function getPublishedArticleBySlug(slug: string): Promise<Article |
     return fixtureArticles.find((article) => article.slug === slug) ?? null;
   }
 
-  const rows = await supabaseRestFetch<ArticleRow[]>(
-    `articles?select=${articleSelect}&slug=eq.${encodeURIComponent(slug)}&status=eq.published&limit=1`,
+  const rows = await fetchArticles<ArticleRow[]>(
+    `articles?select=${getArticleSelect()}&slug=eq.${encodeURIComponent(slug)}&status=eq.published&limit=1`,
     { tags: [ARTICLES_TAG, articleTag(slug)] },
   );
   return rows[0] ? rowToArticle(rows[0]) : null;
 }
 
 export async function listAdminArticles(): Promise<ArticleRow[]> {
-  return supabaseRestFetch<ArticleRow[]>(
-    `articles?select=${articleSelect}&order=updated_at.desc`,
+  return fetchArticles<ArticleRow[]>(
+    `articles?select=${getArticleSelect()}&order=updated_at.desc`,
     { noStore: true },
   );
 }
 
 export async function getAdminArticle(id: string): Promise<ArticleRow | null> {
-  const rows = await supabaseRestFetch<ArticleRow[]>(
-    `articles?select=${articleSelect}&id=eq.${encodeURIComponent(id)}&limit=1`,
+  const rows = await fetchArticles<ArticleRow[]>(
+    `articles?select=${getArticleSelect()}&id=eq.${encodeURIComponent(id)}&limit=1`,
     { noStore: true },
   );
   return rows[0] ?? null;

@@ -7,10 +7,10 @@ Echo Space is a small personal website built with Next.js App Router, TypeScript
 - `/` — homepage with the main brand signal, site positioning, topic tags, and featured article entry.
 - `/articles` — article list page showing all published articles with Neo-brutalist card grid.
 - `/studio` — redirects to the admin article list.
-- `/studio/login` — Supabase magic link login for the configured admin email.
-- `/studio/articles` — admin article list, including drafts, published, and archived records.
-- `/studio/articles/new` — draft editor with live preview.
-- `/studio/articles/[id]` — edit, publish, unpublish, or archive an article.
+- `/studio/login` — admin login with email + password (magic link fallback).
+- `/studio/articles` — admin article list, including drafts, published, and archived records. Each row has an edit link and a permanent delete button with confirmation.
+- `/studio/articles/new` — draft editor with collapsible live preview.
+- `/studio/articles/[id]` — edit, publish, unpublish, archive, or permanently delete an article.
 - `/editor` — compatibility redirect to `/studio/articles/new`.
 - `/content/[slug]` — published article detail page resolved from Supabase by slug.
 - `/content/echo-space` — legacy URL that redirects to the current featured article.
