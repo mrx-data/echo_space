@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CalendarDays, FileText, PenLine, Plus } from "lucide-react";
 import { StudioHeader } from "@/components/studio/studio-shell";
+import { DeleteArticleButton } from "@/components/studio/delete-article-button";
 import { listAdminArticles } from "@/lib/articles-db";
 import { requireAdminPage } from "@/lib/auth";
 
@@ -41,12 +42,11 @@ export default async function StudioArticlesPage() {
               </div>
             ) : (
               articles.map((article) => (
-                <Link
-                  href={`/studio/articles/${article.id}`}
+                <div
                   key={article.id}
                   className="grid gap-4 border-4 border-black bg-white p-5 shadow-[7px_7px_0_0_#000] transition duration-100 hover:-translate-y-0.5 sm:grid-cols-[1fr_auto] sm:items-center"
                 >
-                  <div>
+                  <Link href={`/studio/articles/${article.id}`} className="block">
                     <div className="mb-3 flex flex-wrap gap-2 text-xs font-black uppercase tracking-[0.14em]">
                       <span className="border-4 border-black bg-neo-secondary px-3 py-1">
                         {article.status}
@@ -58,12 +58,18 @@ export default async function StudioArticlesPage() {
                     </div>
                     <h2 className="text-2xl font-black leading-tight">{article.title || "未命名草稿"}</h2>
                     <p className="mt-2 text-sm font-bold opacity-70">/content/{article.slug}</p>
+                  </Link>
+                  <div className="flex items-center gap-3">
+                    <Link
+                      href={`/studio/articles/${article.id}`}
+                      className="inline-flex w-fit items-center gap-2 border-4 border-black bg-black px-4 py-2 text-sm font-black uppercase tracking-[0.14em] text-white shadow-[4px_4px_0_0_#000]"
+                    >
+                      <PenLine aria-hidden="true" className="h-4 w-4 stroke-[4]" />
+                      编辑
+                    </Link>
+                    <DeleteArticleButton articleId={article.id} />
                   </div>
-                  <span className="inline-flex w-fit items-center gap-2 border-4 border-black bg-black px-4 py-2 text-sm font-black uppercase tracking-[0.14em] text-white">
-                    <PenLine aria-hidden="true" className="h-4 w-4 stroke-[4]" />
-                    编辑
-                  </span>
-                </Link>
+                </div>
               ))
             )}
           </div>

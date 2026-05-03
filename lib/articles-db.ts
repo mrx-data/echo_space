@@ -285,6 +285,21 @@ export async function archiveArticle(id: string) {
   return rows[0] ?? null;
 }
 
+export async function permanentlyDeleteArticle(id: string) {
+  const existing = await getAdminArticle(id);
+  if (!existing) return null;
+
+  await supabaseRestFetch<null>(
+    `articles?id=eq.${encodeURIComponent(id)}`,
+    {
+      method: "DELETE",
+      noStore: true,
+    },
+  );
+  invalidateArticleCaches(existing.slug);
+  return existing;
+}
+
 export function invalidateArticleCaches(slug?: string, previousSlug?: string) {
   revalidateTag(ARTICLES_TAG, "max");
   if (slug) revalidateTag(articleTag(slug), "max");

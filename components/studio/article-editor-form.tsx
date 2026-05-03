@@ -7,8 +7,8 @@ import {
   ArrowLeft,
   BookOpen,
   CalendarDays,
-  Check,
   Clock3,
+  Eye,
   EyeOff,
   Hash,
   Layers,
@@ -43,7 +43,7 @@ type ArticleForm = {
   sections: SectionForm[];
 };
 
-type ButtonAction = "save" | "publish" | "unpublish" | "archive";
+type ButtonAction = "save" | "publish" | "unpublish" | "archive" | "permanent-delete";
 
 type ArticleEditorFormProps = {
   articleId?: string;
@@ -108,6 +108,7 @@ export function ArticleEditorForm({ articleId, status = "draft", initial }: Arti
   const [activeAction, setActiveAction] = useState<ButtonAction | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [showPreview, setShowPreview] = useState(true);
 
   const tags = form.tags
     .split(",")
@@ -214,6 +215,33 @@ export function ArticleEditorForm({ articleId, status = "draft", initial }: Arti
       }
     } catch (mutationError) {
       setError(mutationError instanceof Error ? mutationError.message : "操作失败");
+    } finally {
+      setActiveAction(null);
+    }
+  }
+
+  async function permanentDelete() {
+    const id = currentId;
+    if (!id) return;
+
+    const confirmed = window.confirm("确定要永久删除这篇文章吗？此操作不可撤销。");
+    if (!confirmed) return;
+
+    setActiveAction("permanent-delete");
+    setError("");
+    setMessage("");
+
+    try {
+      const response = await fetch(`/api/admin/articles/${id}?permanent=true`, { method: "DELETE" });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error ?? "删除失败");
+      }
+
+      setMessage("文章已永久删除");
+      router.push("/studio/articles");
+    } catch (deleteError) {
+      setError(deleteError instanceof Error ? deleteError.message : "删除失败");
     } finally {
       setActiveAction(null);
     }
@@ -516,17 +544,35 @@ export function ArticleEditorForm({ articleId, status = "draft", initial }: Arti
             归档
           </button>
         </div>
+
+        {currentId && (
+          <button
+            type="button"
+            onClick={permanentDelete}
+            disabled={activeAction !== null}
+            className="inline-flex w-fit items-center gap-2 border-4 border-dashed border-black bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-red-600 opacity-70 hover:border-red-600 hover:bg-red-50 hover:opacity-100 disabled:opacity-40"
+          >
+            {activeAction === "permanent-delete" ? <Loader2 className="h-4 w-4 animate-spin stroke-[4]" /> : <Trash2 className="h-4 w-4 stroke-[4]" />}
+            永久删除
+          </button>
+        )}
       </div>
 
       <div className="hidden lg:block">
         <div className="sticky top-28">
-          <div className="mb-3 inline-flex items-center gap-2 border-4 border-black bg-neo-muted px-4 py-2 text-xs font-black uppercase tracking-[0.18em] shadow-[4px_4px_0_0_#000]">
-            <Check aria-hidden="true" className="h-4 w-4 stroke-[4]" />
-            实时预览
-          </div>
-          <div className="max-h-[calc(100vh-10rem)] overflow-y-auto border-4 border-black bg-white shadow-[12px_12px_0_0_#000]">
-            <ArticlePreview article={previewArticle} />
-          </div>
+          <button
+            type="button"
+            onClick={() => setShowPreview((prev) => !prev)}
+            className="mb-3 inline-flex items-center gap-2 border-4 border-black bg-neo-muted px-4 py-2 text-xs font-black uppercase tracking-[0.18em] shadow-[4px_4px_0_0_#000] transition duration-100 hover:-translate-y-0.5"
+          >
+            {showPreview ? <EyeOff aria-hidden="true" className="h-4 w-4 stroke-[4]" /> : <Eye aria-hidden="true" className="h-4 w-4 stroke-[4]" />}
+            {showPreview ? "隐藏预览" : "显示预览"}
+          </button>
+          {showPreview && (
+            <div className="max-h-[calc(100vh-10rem)] overflow-y-auto border-4 border-black bg-white shadow-[12px_12px_0_0_#000]">
+              <ArticlePreview article={previewArticle} />
+            </div>
+          )}
         </div>
       </div>
     </div>

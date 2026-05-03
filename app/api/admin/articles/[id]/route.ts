@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { archiveArticle, getAdminArticle, updateDraftArticle } from "@/lib/articles-db";
+import { archiveArticle, getAdminArticle, permanentlyDeleteArticle, updateDraftArticle } from "@/lib/articles-db";
 import { requireAdminApi } from "@/lib/auth";
 
 type ArticleParams = {
@@ -42,11 +42,22 @@ export async function PATCH(request: Request, { params }: ArticleParams) {
   return NextResponse.json({ article });
 }
 
-export async function DELETE(_request: Request, { params }: ArticleParams) {
+export async function DELETE(request: Request, { params }: ArticleParams) {
   const auth = await requireAdminApi();
   if (!auth.ok) return auth.response;
 
   const { id } = await params;
+  const url = new URL(request.url);
+  const permanent = url.searchParams.get("permanent") === "true";
+
+  if (permanent) {
+    const article = await permanentlyDeleteArticle(id);
+    if (!article) {
+      return NextResponse.json({ error: "文章不存在" }, { status: 404 });
+    }
+    return NextResponse.json({ article, permanent: true });
+  }
+
   const article = await archiveArticle(id);
   if (!article) {
     return NextResponse.json({ error: "文章不存在" }, { status: 404 });
