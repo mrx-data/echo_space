@@ -43,6 +43,8 @@ type ArticleForm = {
   sections: SectionForm[];
 };
 
+type ButtonAction = "save" | "publish" | "unpublish" | "archive";
+
 type ArticleEditorFormProps = {
   articleId?: string;
   status?: ArticleRow["status"];
@@ -103,7 +105,7 @@ export function ArticleEditorForm({ articleId, status = "draft", initial }: Arti
   const [currentId, setCurrentId] = useState(articleId);
   const [currentStatus, setCurrentStatus] = useState(status);
   const [form, setForm] = useState<ArticleForm>(() => formFromInitial(initial));
-  const [saving, setSaving] = useState(false);
+  const [activeAction, setActiveAction] = useState<ButtonAction | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -150,7 +152,7 @@ export function ArticleEditorForm({ articleId, status = "draft", initial }: Arti
   }
 
   async function saveDraft() {
-    setSaving(true);
+    setActiveAction("save");
     setError("");
     setMessage("");
 
@@ -176,7 +178,7 @@ export function ArticleEditorForm({ articleId, status = "draft", initial }: Arti
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "保存失败");
     } finally {
-      setSaving(false);
+      setActiveAction(null);
     }
   }
 
@@ -188,7 +190,7 @@ export function ArticleEditorForm({ articleId, status = "draft", initial }: Arti
       return;
     }
 
-    setSaving(true);
+    setActiveAction(action);
     setError("");
     setMessage("");
 
@@ -213,7 +215,7 @@ export function ArticleEditorForm({ articleId, status = "draft", initial }: Arti
     } catch (mutationError) {
       setError(mutationError instanceof Error ? mutationError.message : "操作失败");
     } finally {
-      setSaving(false);
+      setActiveAction(null);
     }
   }
 
@@ -480,37 +482,37 @@ export function ArticleEditorForm({ articleId, status = "draft", initial }: Arti
           <button
             type="button"
             onClick={saveDraft}
-            disabled={saving}
+            disabled={activeAction !== null}
             className="inline-flex min-h-14 items-center justify-center gap-2 border-4 border-black bg-neo-secondary px-5 py-3 text-sm font-black uppercase tracking-[0.14em] shadow-[6px_6px_0_0_#000] disabled:opacity-60"
           >
-            {saving ? <Loader2 className="h-5 w-5 animate-spin stroke-[4]" /> : <Save className="h-5 w-5 stroke-[4]" />}
+            {activeAction === "save" ? <Loader2 className="h-5 w-5 animate-spin stroke-[4]" /> : <Save className="h-5 w-5 stroke-[4]" />}
             保存草稿
           </button>
           <button
             type="button"
             onClick={() => mutate("publish")}
-            disabled={saving}
+            disabled={activeAction !== null}
             className="inline-flex min-h-14 items-center justify-center gap-2 border-4 border-black bg-neo-accent px-5 py-3 text-sm font-black uppercase tracking-[0.14em] shadow-[6px_6px_0_0_#000] disabled:opacity-60"
           >
-            <Rocket className="h-5 w-5 stroke-[4]" />
+            {activeAction === "publish" ? <Loader2 className="h-5 w-5 animate-spin stroke-[4]" /> : <Rocket className="h-5 w-5 stroke-[4]" />}
             发布
           </button>
           <button
             type="button"
             onClick={() => mutate("unpublish")}
-            disabled={saving || currentStatus !== "published"}
+            disabled={activeAction !== null || currentStatus !== "published"}
             className="inline-flex min-h-14 items-center justify-center gap-2 border-4 border-black bg-white px-5 py-3 text-sm font-black uppercase tracking-[0.14em] shadow-[6px_6px_0_0_#000] disabled:opacity-50"
           >
-            <EyeOff className="h-5 w-5 stroke-[4]" />
+            {activeAction === "unpublish" ? <Loader2 className="h-5 w-5 animate-spin stroke-[4]" /> : <EyeOff className="h-5 w-5 stroke-[4]" />}
             下线
           </button>
           <button
             type="button"
             onClick={() => mutate("archive")}
-            disabled={saving || !currentId}
+            disabled={activeAction !== null || !currentId}
             className="inline-flex min-h-14 items-center justify-center gap-2 border-4 border-black bg-black px-5 py-3 text-sm font-black uppercase tracking-[0.14em] text-white shadow-[6px_6px_0_0_#000] disabled:opacity-50"
           >
-            <Trash2 className="h-5 w-5 stroke-[4]" />
+            {activeAction === "archive" ? <Loader2 className="h-5 w-5 animate-spin stroke-[4]" /> : <Trash2 className="h-5 w-5 stroke-[4]" />}
             归档
           </button>
         </div>
