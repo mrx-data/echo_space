@@ -21,6 +21,45 @@ const transpiled = ts.transpileModule(contentSource, {
 const moduleUrl = `data:text/javascript;base64,${Buffer.from(transpiled).toString("base64")}`;
 const { articles } = await import(moduleUrl);
 
+const categoryNames = Array.from(
+  new Set(
+    articles
+      .flatMap((article) => article.tags ?? [])
+      .map((tag) => tag.trim())
+      .filter(Boolean),
+  ),
+);
+
+const categoryRows = categoryNames.map((name, index) => ({
+  name,
+  description: "",
+  sort_order: index,
+}));
+
+if (categoryRows.length > 0) {
+  const categoryResponse = await fetch(
+    `${supabaseUrl.replace(/\/$/, "")}/rest/v1/categories?on_conflict=name&select=name`,
+    {
+      method: "POST",
+      headers: {
+        apikey: serviceRoleKey,
+        Authorization: `Bearer ${serviceRoleKey}`,
+        "Content-Type": "application/json",
+        Prefer: "resolution=merge-duplicates,return=representation",
+      },
+      body: JSON.stringify(categoryRows),
+    },
+  );
+
+  if (!categoryResponse.ok) {
+    console.error(await categoryResponse.text());
+    process.exit(1);
+  }
+
+  const seededCategories = await categoryResponse.json();
+  console.log(`Seeded ${seededCategories.length} categories.`);
+}
+
 const rows = articles.map((article) => ({
   slug: article.slug,
   title: article.title,

@@ -21,7 +21,7 @@ import {
   Type,
 } from "lucide-react";
 import { ArticlePreview } from "@/components/article-preview";
-import type { ArticleDraftInput, ArticleRow } from "@/lib/articles-db";
+import type { ArticleDraftInput, ArticleRow, CategoryRow } from "@/lib/articles-db";
 import type { ArticleFontFamily, ArticleFontSize } from "@/lib/content";
 
 type SectionForm = {
@@ -35,7 +35,7 @@ type ArticleForm = {
   slug: string;
   date: string;
   readingTime: string;
-  tags: string;
+  tags: string[];
   excerpt: string;
   highlight: string;
   fontFamily: ArticleFontFamily;
@@ -52,6 +52,7 @@ type ArticleEditorFormProps = {
   articleId?: string;
   status?: ArticleRow["status"];
   initial?: ArticleDraftInput;
+  categories?: CategoryRow[];
 };
 
 const emptyForm: ArticleForm = {
@@ -59,7 +60,7 @@ const emptyForm: ArticleForm = {
   slug: "",
   date: new Date().toISOString().split("T")[0],
   readingTime: "5 min read",
-  tags: "",
+  tags: [],
   excerpt: "",
   highlight: "",
   fontFamily: "sans",
@@ -88,7 +89,7 @@ function formFromInitial(initial?: ArticleDraftInput): ArticleForm {
     slug: initial.slug ?? "",
     date: initial.date ?? emptyForm.date,
     readingTime: initial.readingTime ?? emptyForm.readingTime,
-    tags: initial.tags?.join(", ") ?? "",
+    tags: initial.tags ?? [],
     excerpt: initial.excerpt ?? "",
     highlight: initial.highlight ?? "",
     fontFamily: initial.fontFamily ?? "sans",
@@ -107,7 +108,7 @@ function formFromInitial(initial?: ArticleDraftInput): ArticleForm {
   };
 }
 
-export function ArticleEditorForm({ articleId, status = "draft", initial }: ArticleEditorFormProps) {
+export function ArticleEditorForm({ articleId, status = "draft", initial, categories = [] }: ArticleEditorFormProps) {
   const router = useRouter();
   const [currentId, setCurrentId] = useState(articleId);
   const [currentStatus, setCurrentStatus] = useState(status);
@@ -151,10 +152,11 @@ export function ArticleEditorForm({ articleId, status = "draft", initial }: Arti
     };
   }, []);
 
-  const tags = form.tags
-    .split(",")
-    .map((tag) => tag.trim())
-    .filter(Boolean);
+  const tags = form.tags;
+  const categoryOptions = [
+    ...categories.map((category) => category.name),
+    ...tags.filter((tag) => !categories.some((category) => category.name === tag)),
+  ];
 
   const previewArticle = {
     title: form.title || "文章标题",
@@ -195,6 +197,15 @@ export function ArticleEditorForm({ articleId, status = "draft", initial }: Arti
         callout: section.callout || undefined,
       })),
     };
+  }
+
+  function toggleCategory(category: string) {
+    setForm((prev) => ({
+      ...prev,
+      tags: prev.tags.includes(category)
+        ? prev.tags.filter((tag) => tag !== category)
+        : [...prev.tags, category],
+    }));
   }
 
   async function saveDraft() {
@@ -394,15 +405,43 @@ export function ArticleEditorForm({ articleId, status = "draft", initial }: Arti
                 />
               </label>
             </div>
-            <label className="grid gap-1">
-              <span className="text-sm font-black uppercase tracking-[0.14em]">标签（逗号分隔）</span>
-              <input
-                type="text"
-                value={form.tags}
-                onChange={(event) => setForm((prev) => ({ ...prev, tags: event.target.value }))}
-                className="w-full border-4 border-black bg-neo-bg px-4 py-3 text-base font-bold focus:outline-none focus:ring-4 focus:ring-neo-secondary"
-              />
-            </label>
+            <div className="grid gap-2">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <span className="text-sm font-black uppercase tracking-[0.14em]">分类</span>
+                <Link href="/studio/categories" className="text-xs font-black uppercase tracking-[0.14em] underline decoration-4 underline-offset-4">
+                  管理分类
+                </Link>
+              </div>
+              {categoryOptions.length > 0 ? (
+                <div className="flex flex-wrap gap-3 border-4 border-black bg-neo-bg p-4">
+                  {categoryOptions.map((category) => {
+                    const checked = tags.includes(category);
+                    const isKnownCategory = categories.some((item) => item.name === category);
+                    return (
+                      <label
+                        key={category}
+                        className={`inline-flex cursor-pointer items-center gap-2 border-4 border-black px-4 py-2 text-sm font-black uppercase tracking-[0.12em] shadow-[4px_4px_0_0_#000] ${
+                          checked ? "bg-neo-secondary" : "bg-white"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggleCategory(category)}
+                          className="h-4 w-4 accent-black"
+                        />
+                        {category}
+                        {!isKnownCategory ? <span className="text-[10px] opacity-60">历史</span> : null}
+                      </label>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="border-4 border-black bg-neo-bg p-4 text-sm font-bold">
+                  还没有分类。请先到分类管理页创建分类，再回到这里选择。
+                </div>
+              )}
+            </div>
             <label className="grid gap-1">
               <span className="text-sm font-black uppercase tracking-[0.14em]">文章摘要</span>
               <textarea

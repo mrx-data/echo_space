@@ -39,14 +39,16 @@ npm run build
 
 Manual smoke checks:
 
-- `/` loads and shows the Echo Space hero with navigation links (关于, 文章, 阅读, 写作).
+- `/` loads and shows the Echo Space hero with navigation links (关于, 作品, 文章, 阅读, 写作) and clickable category tags.
 - `/articles` loads and shows the article list with featured hero card and article grid.
+- `/articles?tag={category}` filters the list to published articles containing that category and includes a "查看全部文章" link.
 - `/editor` redirects to `/studio/articles/new`.
 - `/studio/login` accepts admin email + password login. Magic link is also available as fallback.
 - A non-admin email is rejected by `/api/auth/login` and `/api/auth/magic-link`.
-- `/studio/articles` requires auth and lists drafts, published articles, and archived records. Each row shows an edit link and a permanent delete button with confirmation.
+- `/studio/articles` requires auth and lists drafts, published articles, and archived records. Category filtering (`tag`) and title search (`q`) can be combined. Each row shows an edit link and a permanent delete button with confirmation.
+- `/studio/categories` requires auth, creates categories, edits descriptions/sort order, and rejects deletion while a category is used by any article.
 - `/studio/articles/new` saves a draft through `/api/admin/articles`. The preview panel can be toggled with the 显示预览/隐藏预览 button.
-- `/studio/articles/[id]` edits slug, source info, tags, sections, and provides a permanent delete button at the bottom.
+- `/studio/articles/[id]` edits slug, source info, category selections, sections, and provides a permanent delete button at the bottom.
 - Publishing makes the article visible on `/`, `/articles`, and `/content/[slug]`.
 - Unpublishing removes the article from public pages.
 - Archiving removes the article from public pages and keeps it in Studio as `archived`.
@@ -79,6 +81,8 @@ Seed existing file content:
 npm run seed:articles
 ```
 
+The seed script imports fixture articles and upserts their `tags` as categories.
+
 Deploy through Vercel:
 
 ```text
@@ -96,9 +100,11 @@ Add a new article:
 ```text
 1. Navigate to /studio/login
 2. Log in with ADMIN_EMAIL and password
-3. Open /studio/articles/new
-4. Save draft
-5. Publish when required fields are complete
+3. Open /studio/categories and create any needed categories
+4. Open /studio/articles/new
+5. Select one or more categories
+6. Save draft
+7. Publish when required fields are complete
 ```
 
 Change article content:
@@ -167,6 +173,8 @@ If Studio login fails, confirm the Supabase user exists, the email equals `ADMIN
 If public pages show fixture content after cutover, confirm `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` are all present in the runtime environment.
 
 If publish fails, check the article has `slug`, `title`, `excerpt`, `highlight`, and at least one section with heading and body.
+
+If a category cannot be deleted, check `/studio/articles` for drafts, published articles, or archived records still using that category.
 
 If a changed slug still serves stale content, confirm mutation routes are calling `revalidateTag` and that the old slug was saved before the patch.
 

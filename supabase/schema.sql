@@ -28,6 +28,19 @@ create index if not exists articles_status_published_at_idx
 create index if not exists articles_updated_at_idx
   on public.articles (updated_at desc);
 
+create table if not exists public.categories (
+  name text primary key,
+  description text not null default '',
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  check (length(trim(name)) > 0),
+  check (position(',' in name) = 0)
+);
+
+create index if not exists categories_sort_order_name_idx
+  on public.categories (sort_order asc, name asc);
+
 create or replace function public.set_updated_at()
 returns trigger
 language plpgsql
@@ -45,4 +58,12 @@ before update on public.articles
 for each row
 execute function public.set_updated_at();
 
+drop trigger if exists set_categories_updated_at on public.categories;
+
+create trigger set_categories_updated_at
+before update on public.categories
+for each row
+execute function public.set_updated_at();
+
 alter table public.articles enable row level security;
+alter table public.categories enable row level security;

@@ -8,21 +8,21 @@ Echo Space is a personal site built with the Next.js App Router and a Supabase-b
 
 - Browser requests hit Next.js first.
 - Server Components and Route Handlers query Supabase.
-- The browser never writes directly to the `articles` table.
+- The browser never writes directly to the `articles` or `categories` tables.
 - Vercel hosts the app runtime; Supabase owns durable content and auth state.
-- Public pages: `/`, `/articles`, `/content/[slug]`, `/content/echo-space`.
-- Admin pages: `/studio`, `/studio/login`, `/studio/articles`, `/studio/articles/new`, `/studio/articles/[id]`.
+- Public pages: `/`, `/articles`, `/content/[slug]`, `/content/echo-space`. The homepage is a curated personal work index backed by the latest published article query, backend-managed category links, and static links to existing public content.
+- Admin pages: `/studio`, `/studio/login`, `/studio/articles`, `/studio/articles/new`, `/studio/articles/[id]`, `/studio/categories`.
 - Compatibility route: `/editor` redirects to `/studio/articles/new`.
-- Admin APIs: `/api/admin/articles/*`.
+- Admin APIs: `/api/admin/articles/*`, `/api/admin/categories/*`.
 - Auth APIs: `/api/auth/login`, `/api/auth/magic-link`, `/api/auth/session`, `/api/auth/logout`.
 - All public content reads are server-side. Admin writes use server-side Supabase service credentials.
 - If Supabase env vars are missing, public pages fall back to `lib/content.ts` fixtures so local build verification remains possible.
 
 ## Content Model
 
-Supabase owns runtime article data in the `articles` table defined in `supabase/schema.sql`.
+Supabase owns runtime article and category data in the tables defined in `supabase/schema.sql`.
 
-Main fields:
+Article fields:
 
 - `id uuid primary key`
 - `slug text unique not null`
@@ -33,7 +33,14 @@ Main fields:
 - `sections jsonb`, shaped as `{ heading, body[], callout? }[]`
 - timestamps and `author_user_id`
 
-`lib/articles-db.ts` maps Supabase rows to the existing article render shape. `lib/content.ts` remains as fixtures for migration and build fallback, plus `topicTags`.
+Category fields:
+
+- `name text primary key`
+- `description text`
+- `sort_order integer`
+- timestamps
+
+`articles.tags` stores selected category names so existing article render shapes remain compatible. `lib/articles-db.ts` maps Supabase rows to the existing article render shape and exposes category CRUD helpers. `lib/content.ts` remains as fixtures for migration and build fallback.
 
 ## Auth And Admin Guard
 
@@ -50,17 +57,19 @@ Supabase Auth supports password login (primary) and email magic link (fallback).
 
 The Studio editor is a client component that:
 
-1. Renders metadata, source fields, tags, and dynamic section editing.
+1. Renders metadata, source fields, backend-managed category multi-selects, and dynamic section editing.
 2. Shows a collapsible live preview panel using `ArticlePreview`; the toggle button lets the user show or hide the preview.
 3. Saves drafts through `POST /api/admin/articles` or `PATCH /api/admin/articles/[id]`.
 4. Publishes, unpublishes, and archives through explicit admin endpoints.
 5. Permanently deletes articles through `DELETE /api/admin/articles/[id]?permanent=true` with a browser confirmation dialog. The list page (`/studio/articles`) also has a per-row delete button using `DeleteArticleButton`.
 
+`/studio/categories` manages category names, descriptions, and sort order. Category names cannot be renamed in v1; create a new category and switch articles over when renaming is needed. Deleting a category is rejected while any article still references it in `articles.tags`.
+
 `/api/articles` no longer mutates files; it returns a 410 compatibility error.
 
 ## Caching
 
-Public list reads are tagged with `articles`. Public detail reads are tagged with `articles` and `article:{slug}`. After create, update, publish, unpublish, archive, or permanent-delete, the admin mutation invalidates `articles`, the current slug tag, and the old slug tag when a slug changes.
+Public list reads are tagged with `articles`; filtered reads also use `category:{name}`. Public category reads are tagged with `categories`. Public detail reads are tagged with `articles` and `article:{slug}`. Article mutations invalidate article tags; category mutations invalidate category and article list tags.
 
 ## Deployment Model
 
@@ -77,7 +86,7 @@ The `SUPABASE_SERVICE_ROLE_KEY` is only used from server-side Route Handlers and
 
 ## Cutover State
 
-As of 2026-05-02, the Supabase project has the `articles` table from `supabase/schema.sql`, and the one-time seed imported the fixture articles `horizontal-vertical-ai-research` and `hermes-weixin`.
+As of 2026-05-02, the Supabase project had the `articles` table from `supabase/schema.sql`, and the one-time seed imported the fixture articles `horizontal-vertical-ai-research` and `hermes-weixin`. The current schema also includes `categories`; rerun the SQL and seed script to upsert fixture tags as categories.
 
 ## UI System
 
@@ -114,7 +123,9 @@ Core reusable components:
 /studio/articles     app/studio/articles/page.tsx                (admin)
 /studio/articles/new app/studio/articles/new/page.tsx            (admin)
 /studio/articles/[id] app/studio/articles/[id]/page.tsx          (admin)
+/studio/categories   app/studio/categories/page.tsx              (admin)
 /api/admin/articles  app/api/admin/articles/route.ts             (admin API)
+/api/admin/categories app/api/admin/categories/route.ts           (admin API)
 /api/auth/*          app/api/auth/*                              (auth API: login, magic-link, session, logout)
 /api/articles        app/api/articles/route.ts                   (410 compatibility)
 /content/[slug]      app/content/[slug]/page.tsx                 (published content)

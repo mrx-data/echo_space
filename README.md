@@ -4,13 +4,14 @@ Echo Space is a small personal website built with Next.js App Router, TypeScript
 
 ## Routes
 
-- `/` — homepage with the main brand signal, site positioning, topic tags, and featured article entry.
-- `/articles` — article list page showing all published articles with Neo-brutalist card grid.
+- `/` — homepage with the main brand signal, backend-managed category links, curated work entry points, featured article entry, and contact links.
+- `/articles` — article list page showing all published articles with Neo-brutalist card grid. `/articles?tag={category}` filters by category.
 - `/studio` — redirects to the admin article list.
 - `/studio/login` — admin login with email + password (magic link fallback).
-- `/studio/articles` — admin article list, including drafts, published, and archived records. Each row has an edit link and a permanent delete button with confirmation.
+- `/studio/articles` — admin article list, including drafts, published, and archived records, with category filtering and title search. Each row has an edit link and a permanent delete button with confirmation.
 - `/studio/articles/new` — draft editor with collapsible live preview.
 - `/studio/articles/[id]` — edit, publish, unpublish, archive, or permanently delete an article.
+- `/studio/categories` — admin category manager used by article category multi-selects.
 - `/editor` — compatibility redirect to `/studio/articles/new`.
 - `/content/[slug]` — published article detail page resolved from Supabase by slug.
 - `/content/echo-space` — legacy URL that redirects to the current featured article.
@@ -73,6 +74,7 @@ app/
   editor/page.tsx
   studio/
   api/admin/articles/
+  api/admin/categories/
   api/auth/
   api/articles/route.ts
   content/[slug]/page.tsx
@@ -120,9 +122,9 @@ Restart `npm run dev` after changing `.env.local`; Next.js reads these values wh
 ## Supabase Setup
 
 1. Open the Supabase SQL editor for the project.
-2. Run `supabase/schema.sql` to create the `articles` table and `updated_at` trigger.
+2. Run `supabase/schema.sql` to create the `articles` and `categories` tables plus `updated_at` triggers.
 3. Add the four environment variables above to `.env.local`.
-4. Run `npm run seed:articles` once to import fixture articles from `lib/content.ts`.
+4. Run `npm run seed:articles` once to import fixture articles and upsert their tags as categories.
 5. Confirm `/articles` and `/content/{slug}` load published rows from Supabase.
 
 ## Deploying To Vercel
@@ -133,7 +135,7 @@ After deployment, the configured admin can continue creating and publishing arti
 
 ## Editing Content
 
-Open `/studio/login`, sign in with the configured `ADMIN_EMAIL` and password, then use `/studio/articles/new` or `/studio/articles/[id]`. The editor saves drafts through `/api/admin/articles/*`; publishing updates Supabase and invalidates tagged Next.js caches.
+Open `/studio/login`, sign in with the configured `ADMIN_EMAIL` and password, then create categories in `/studio/categories` before using `/studio/articles/new` or `/studio/articles/[id]`. The editor saves drafts through `/api/admin/articles/*`; publishing updates Supabase and invalidates tagged Next.js caches.
 
 Magic link login is also available as a fallback option on the login page.
 
@@ -145,13 +147,13 @@ Each article contains:
 - title
 - date
 - readingTime
-- tags
+- tags (backend-managed category names stored in `articles.tags`)
 - excerpt
 - highlight
 - source metadata
 - sections and callouts
 
-Article routes are resolved by slug from Supabase through `app/content/[slug]/page.tsx`. `/articles` lists published articles only. The homepage and header link to the latest published article when one exists.
+Article routes are resolved by slug from Supabase through `app/content/[slug]/page.tsx`. `/articles` lists published articles only, and `/articles?tag={category}` filters to published articles containing that category. The homepage and header link to the latest published article when one exists.
 
 ## Design Notes
 

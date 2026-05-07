@@ -77,9 +77,11 @@ export function ArticlePage({ article }: ArticlePageProps) {
                   <p className="mb-4 text-sm font-black uppercase tracking-[0.18em]">标签</p>
                   <div className="flex flex-wrap gap-3">
                     {article.tags.map((tag, index) => (
-                      <StickerBadge tone={index % 2 === 0 ? "secondary" : "muted"} key={tag}>
-                        {tag}
-                      </StickerBadge>
+                      <Link href={`/articles?tag=${encodeURIComponent(tag)}`} key={tag}>
+                        <StickerBadge tone={index % 2 === 0 ? "secondary" : "muted"}>
+                          {tag}
+                        </StickerBadge>
+                      </Link>
                     ))}
                   </div>
                 </div>

@@ -20,6 +20,12 @@ export function StudioHeader() {
             公共文章
           </Link>
           <Link
+            href="/studio/categories"
+            className="hidden border-2 border-transparent px-3 py-2 text-sm font-black uppercase tracking-[0.16em] transition duration-100 hover:border-black hover:bg-neo-secondary sm:inline-flex"
+          >
+            分类
+          </Link>
+          <Link
             href="/studio/articles/new"
             className="inline-flex min-h-12 items-center gap-2 border-4 border-black bg-neo-secondary px-4 py-2 text-sm font-black uppercase tracking-[0.14em] shadow-[5px_5px_0_0_#000]"
           >

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ArticleEditorForm } from "@/components/studio/article-editor-form";
 import { StudioHeader } from "@/components/studio/studio-shell";
-import { getAdminArticle, rowToDraftInput } from "@/lib/articles-db";
+import { getAdminArticle, getCategories, rowToDraftInput } from "@/lib/articles-db";
 import { requireAdminPage } from "@/lib/auth";
 
 type StudioArticlePageProps = {
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 export default async function StudioArticlePage({ params }: StudioArticlePageProps) {
   await requireAdminPage();
   const { id } = await params;
-  const article = await getAdminArticle(id);
+  const [article, categories] = await Promise.all([getAdminArticle(id), getCategories()]);
 
   if (!article) {
     notFound();
@@ -32,6 +32,7 @@ export default async function StudioArticlePage({ params }: StudioArticlePagePro
           articleId={article.id}
           status={article.status}
           initial={rowToDraftInput(article)}
+          categories={categories}
         />
       </main>
     </>

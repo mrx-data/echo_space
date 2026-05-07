@@ -6,16 +6,22 @@ import { MarqueeStrip } from "@/components/marquee-strip";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { StickerBadge } from "@/components/sticker-badge";
-import { getPublishedArticles } from "@/lib/articles-db";
-import { topicTags } from "@/lib/content";
+import { getCategories, getPublishedArticles } from "@/lib/articles-db";
 
 export const metadata: Metadata = {
   title: "全部文章",
   description: "Echo Space 中所有已发布的文章、笔记与研究。",
 };
 
-export default async function ArticlesPage() {
-  const articles = await getPublishedArticles();
+type ArticlesPageProps = {
+  searchParams?: Promise<{ tag?: string | string[] }>;
+};
+
+export default async function ArticlesPage({ searchParams }: ArticlesPageProps) {
+  const params = await searchParams;
+  const selectedTag = Array.isArray(params?.tag) ? params?.tag[0] : params?.tag;
+  const [articles, categories] = await Promise.all([getPublishedArticles(selectedTag), getCategories()]);
+  const categoryNames = categories.map((category) => category.name);
 
   return (
     <>
@@ -33,25 +39,50 @@ export default async function ArticlesPage() {
               </div>
             </div>
             <StickerBadge tone="muted" className="mb-6 w-fit rotate-[-2deg]">
-              全部文章
+              {selectedTag ? "分类文章" : "全部文章"}
             </StickerBadge>
             <h1 className="max-w-5xl text-6xl font-black uppercase leading-none tracking-[0] sm:text-8xl lg:text-9xl">
-              <span className="block">全部</span>
+              <span className="block">{selectedTag ? selectedTag : "全部"}</span>
               <span className="neo-outline-text block">文章</span>
             </h1>
             <p className="mt-6 max-w-3xl border-l-8 border-black bg-white px-5 py-4 text-xl font-bold leading-snug shadow-[6px_6px_0_0_#000] sm:text-2xl">
-              所有已经整理进 Echo Space 的文章、笔记与研究。
-              {articles.length > 1 ? `共 ${articles.length} 篇。` : "从这里开始阅读。"}
+              {selectedTag ? `包含「${selectedTag}」分类的文章。` : "所有已经整理进 Echo Space 的文章、笔记与研究。"}
+              {articles.length > 0 ? `共 ${articles.length} 篇。` : "暂时还没有文章。"}
             </p>
+            {selectedTag ? (
+              <Link
+                href="/articles"
+                className="mt-6 inline-flex min-h-12 items-center gap-2 border-4 border-black bg-neo-secondary px-4 py-2 text-sm font-black uppercase tracking-[0.14em] shadow-[5px_5px_0_0_#000]"
+              >
+                查看全部文章
+                <BookOpen aria-hidden="true" className="h-5 w-5 stroke-[4]" />
+              </Link>
+            ) : null}
           </div>
         </section>
 
-        <MarqueeStrip items={topicTags} />
+        {categoryNames.length > 0 ? <MarqueeStrip items={categoryNames} /> : null}
 
         {/* Article list */}
         <section className="bg-neo-bg px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
           <div className="mx-auto max-w-7xl">
-            <ArticleList articles={articles} />
+            {articles.length > 0 ? (
+              <ArticleList articles={articles} />
+            ) : (
+              <div className="border-4 border-black bg-white p-8 shadow-[8px_8px_0_0_#000]">
+                <BookOpen aria-hidden="true" className="mb-4 h-10 w-10 stroke-[4]" />
+                <p className="text-2xl font-black">
+                  {selectedTag ? `「${selectedTag}」分类下还没有已发布文章。` : "还没有已发布文章。"}
+                </p>
+                <Link
+                  href="/articles"
+                  className="mt-6 inline-flex min-h-12 items-center gap-2 border-4 border-black bg-neo-secondary px-4 py-2 text-sm font-black uppercase tracking-[0.14em] shadow-[5px_5px_0_0_#000]"
+                >
+                  查看全部文章
+                  <BookOpen aria-hidden="true" className="h-5 w-5 stroke-[4]" />
+                </Link>
+              </div>
+            )}
           </div>
         </section>
 

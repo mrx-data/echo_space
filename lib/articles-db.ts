@@ -29,6 +29,20 @@ export type ArticleRow = {
   author_user_id: string | null;
 };
 
+export type CategoryRow = {
+  name: string;
+  description: string;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type CategoryInput = {
+  name?: string;
+  description?: string;
+  sortOrder?: number;
+};
+
 export type ArticleDraftInput = {
   slug?: string;
   title?: string;
@@ -72,9 +86,61 @@ function getArticleSelect(): string {
 }
 
 export const ARTICLES_TAG = "articles";
+export const CATEGORIES_TAG = "categories";
 
 export function articleTag(slug: string) {
   return `article:${slug}`;
+}
+
+function categoryTag(name: string) {
+  return `category:${name}`;
+}
+
+function isMissingCategoryTableError(error: unknown) {
+  return error instanceof Error && (error.message.includes("categories") || error.message.includes("PGRST205"));
+}
+
+function encodeArrayContainsValue(value: string) {
+  return encodeURIComponent(value);
+}
+
+export function normalizeCategoryName(name?: string) {
+  return (name ?? "").trim();
+}
+
+export function sanitizeCategoryInput(input: CategoryInput) {
+  const name = normalizeCategoryName(input.name);
+  const description = input.description?.trim() ?? "";
+  const sortOrder = Number.isFinite(input.sortOrder) ? Number(input.sortOrder) : 0;
+  const errors: string[] = [];
+
+  if (!name) errors.push("name");
+  if (name.includes(",")) errors.push("name_comma");
+
+  return {
+    name,
+    description,
+    sort_order: sortOrder,
+    errors,
+  };
+}
+
+export function getFixtureCategories(): CategoryRow[] {
+  const names = new Set<string>();
+  for (const article of fixtureArticles) {
+    for (const tag of article.tags) {
+      const name = normalizeCategoryName(tag);
+      if (name) names.add(name);
+    }
+  }
+
+  return Array.from(names).map((name, index) => ({
+    name,
+    description: "",
+    sort_order: index,
+    created_at: "",
+    updated_at: "",
+  }));
 }
 
 export function rowToArticle(row: ArticleRow): Article {
@@ -163,16 +229,111 @@ export function validatePublishInput(input: ArticleDraftInput): string[] {
   return errors;
 }
 
-export async function getPublishedArticles(): Promise<Article[]> {
+export async function getPublishedArticles(categoryName?: string): Promise<Article[]> {
+  const category = normalizeCategoryName(categoryName);
+
   if (!isSupabaseConfigured()) {
-    return fixtureArticles;
+    return category ? fixtureArticles.filter((article) => article.tags.includes(category)) : fixtureArticles;
   }
 
+  const categoryFilter = category ? `&tags=cs.{${encodeArrayContainsValue(category)}}` : "";
   const rows = await fetchArticles<ArticleRow[]>(
-    `articles?select=${getArticleSelect()}&status=eq.published&order=published_at.desc.nullslast,date.desc`,
-    { tags: [ARTICLES_TAG] },
+    `articles?select=${getArticleSelect()}&status=eq.published${categoryFilter}&order=published_at.desc.nullslast,date.desc`,
+    { tags: category ? [ARTICLES_TAG, categoryTag(category)] : [ARTICLES_TAG] },
   );
   return rows.map(rowToArticle);
+}
+
+export async function getCategories(): Promise<CategoryRow[]> {
+  if (!isSupabaseConfigured()) {
+    return getFixtureCategories();
+  }
+
+  try {
+    return await supabaseRestFetch<CategoryRow[]>(
+      "categories?select=name,description,sort_order,created_at,updated_at&order=sort_order.asc,name.asc",
+      { tags: [CATEGORIES_TAG] },
+    );
+  } catch (error) {
+    if (isMissingCategoryTableError(error)) {
+      return getFixtureCategories();
+    }
+    throw error;
+  }
+}
+
+export async function getCategoryUsageCounts(): Promise<Record<string, number>> {
+  const counts: Record<string, number> = {};
+  const articles = isSupabaseConfigured()
+    ? await listAdminArticles().catch((error) => {
+        if (isMissingCategoryTableError(error)) return [] as ArticleRow[];
+        throw error;
+      })
+    : fixtureArticles.map((article) => ({ tags: article.tags }) as ArticleRow);
+
+  for (const article of articles) {
+    for (const tag of article.tags ?? []) {
+      counts[tag] = (counts[tag] ?? 0) + 1;
+    }
+  }
+  return counts;
+}
+
+export async function createCategory(input: CategoryInput) {
+  const sanitized = sanitizeCategoryInput(input);
+  if (sanitized.errors.length > 0) {
+    throw new Error(`分类字段无效：${sanitized.errors.join(", ")}`);
+  }
+
+  const rows = await supabaseRestFetch<CategoryRow[]>("categories?select=name,description,sort_order,created_at,updated_at", {
+    method: "POST",
+    headers: { Prefer: "return=representation" },
+    body: JSON.stringify({
+      name: sanitized.name,
+      description: sanitized.description,
+      sort_order: sanitized.sort_order,
+    }),
+    noStore: true,
+  });
+  invalidateCategoryCaches(sanitized.name);
+  return rows[0];
+}
+
+export async function updateCategory(name: string, input: Omit<CategoryInput, "name">) {
+  const normalizedName = normalizeCategoryName(name);
+  const sortOrder = Number.isFinite(input.sortOrder) ? Number(input.sortOrder) : 0;
+  const rows = await supabaseRestFetch<CategoryRow[]>(
+    `categories?name=eq.${encodeURIComponent(normalizedName)}&select=name,description,sort_order,created_at,updated_at`,
+    {
+      method: "PATCH",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify({
+        description: input.description?.trim() ?? "",
+        sort_order: sortOrder,
+      }),
+      noStore: true,
+    },
+  );
+  invalidateCategoryCaches(normalizedName);
+  return rows[0] ?? null;
+}
+
+export async function deleteCategory(name: string) {
+  const normalizedName = normalizeCategoryName(name);
+  const usageCounts = await getCategoryUsageCounts();
+  if ((usageCounts[normalizedName] ?? 0) > 0) {
+    throw new Error("分类已被文章使用，不能删除");
+  }
+
+  await supabaseRestFetch<null>(
+    `categories?name=eq.${encodeURIComponent(normalizedName)}`,
+    {
+      method: "DELETE",
+      noStore: true,
+    },
+  );
+  invalidateCategoryCaches(normalizedName);
+  return { name: normalizedName };
 }
 
 export async function getFeaturedArticle(): Promise<Article | null> {
@@ -338,4 +499,10 @@ export function invalidateArticleCaches(slug?: string, previousSlug?: string) {
   revalidateTag(ARTICLES_TAG, "max");
   if (slug) revalidateTag(articleTag(slug), "max");
   if (previousSlug && previousSlug !== slug) revalidateTag(articleTag(previousSlug), "max");
+}
+
+export function invalidateCategoryCaches(name?: string) {
+  revalidateTag(CATEGORIES_TAG, "max");
+  revalidateTag(ARTICLES_TAG, "max");
+  if (name) revalidateTag(categoryTag(name), "max");
 }
