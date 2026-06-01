@@ -8,7 +8,7 @@ Echo Space is a small personal website built with Next.js App Router, TypeScript
 - `/articles` — article list page showing all published articles with Neo-brutalist card grid. `/articles?tag={category}` filters by category.
 - `/studio` — redirects to the admin article list.
 - `/studio/login` — admin login with email + password (magic link fallback).
-- `/studio/articles` — admin article list, including drafts, published, and archived records, with category filtering and title search. Each row has an edit link and a permanent delete button with confirmation.
+- `/studio/articles` — admin article list, including drafts, published, and archived records, with category filtering and title search. `/studio/articles?tag={category}&q={title}` combines both filters. Each row has an edit link and a permanent delete button with confirmation.
 - `/studio/articles/new` — draft editor with collapsible live preview.
 - `/studio/articles/[id]` — edit, publish, unpublish, archive, or permanently delete an article.
 - `/studio/categories` — admin category manager used by article category multi-selects.
@@ -132,6 +132,12 @@ Restart `npm run dev` after changing `.env.local`; Next.js reads these values wh
 Connect the GitHub repository to a Vercel project, then add the same environment variables in Vercel before redeploying. Code deploys update the Next.js app only; article data is stored durably in Supabase, so a Vercel deployment does not erase drafts or published articles.
 
 After deployment, the configured admin can continue creating and publishing articles through `/studio`. Other visitors can only read published content through public pages.
+
+Public header admin shortcuts:
+
+- `写作` opens `/studio/articles/new`.
+- `管理` opens `/studio/articles`.
+- Both routes require admin login through `/studio/login`.
 
 ## Editing Content
 

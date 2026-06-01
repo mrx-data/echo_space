@@ -17,16 +17,16 @@ export default async function StudioCategoriesPage() {
   return (
     <>
       <StudioHeader />
-      <main className="min-h-screen bg-neo-bg px-4 py-10 sm:px-6 lg:px-8">
+      <main className="min-h-screen bg-[#fbfaf7] px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-7xl gap-8">
           <div>
-            <span className="mb-4 inline-flex border-4 border-black bg-neo-muted px-4 py-2 text-sm font-black uppercase tracking-[0.16em] shadow-[4px_4px_0_0_#000]">
-              分类库
+            <span className="mb-2 text-xs font-medium uppercase tracking-widest text-[#596044]">
+              CATEGORIES
             </span>
-            <h1 className="text-6xl font-black uppercase leading-none tracking-[0] sm:text-8xl">
-              Categories
+            <h1 className="font-['Cormorant_Garamond',Georgia,serif] text-4xl font-semibold text-[#171713] sm:text-5xl">
+              分类管理
             </h1>
-            <p className="mt-4 max-w-3xl text-lg font-bold leading-snug">
+            <p className="mt-2 max-w-3xl text-sm text-[#64645c]">
               自建文章分类，文章编辑器会从这里读取可选分类。已被文章使用的分类不能直接删除。
             </p>
           </div>

@@ -60,6 +60,18 @@ Configure these locally in `.env.local` and in Vercel. Never commit real secret 
 
 ## Verified State
 
+On 2026-05-07:
+
+- Latest pushed commit on `main`: `7ea1168 Add category management and admin filters`.
+- `npm run lint` passed.
+- `npm run build` passed after allowing Turbopack/PostCSS to bind a local process port outside the sandbox.
+- Homepage changed from an atmosphere-first page to a clearer personal work index with backend-managed category links, curated work cards, latest article entry, GitHub, and email contact.
+- Public header has both `写作` (`/studio/articles/new`) and `管理` (`/studio/articles`) desktop buttons; both Studio routes require admin login.
+- Category system implemented in code: `categories` schema, `/studio/categories`, `/api/admin/categories`, `/api/admin/categories/[name]`, editor category multi-select, and seed upsert from fixture tags.
+- Public category filtering works at `/articles?tag=<category>`.
+- Admin article filtering works at `/studio/articles?tag=<category>&q=<title>`.
+- Database follow-up: apply updated `supabase/schema.sql` and run `npm run seed:articles` in any Supabase environment that does not yet have `categories`.
+
 On 2026-05-02:
 
 - `npm run lint` passed.

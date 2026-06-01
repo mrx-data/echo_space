@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BookOpen, Layers } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { ArticleList } from "@/components/article-list";
 import { MarqueeStrip } from "@/components/marquee-strip";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { StickerBadge } from "@/components/sticker-badge";
 import { getCategories, getPublishedArticles } from "@/lib/articles-db";
 
 export const metadata: Metadata = {
@@ -28,58 +27,73 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
       <SiteHeader />
       <main>
         {/* Hero header */}
-        <section className="neo-noise border-b-4 border-black bg-neo-bg px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+        <section className="bg-canvas px-6 py-12 sm:py-16 lg:px-8">
           <div className="mx-auto max-w-7xl">
-            <div className="mb-8 flex items-center gap-4">
-              <div className="flex h-16 w-16 items-center justify-center border-4 border-black bg-neo-secondary shadow-[6px_6px_0_0_#000]">
-                <BookOpen aria-hidden="true" className="h-9 w-9 stroke-[4]" />
-              </div>
-              <div className="flex h-16 w-16 items-center justify-center rotate-6 border-4 border-black bg-neo-accent shadow-[6px_6px_0_0_#000]">
-                <Layers aria-hidden="true" className="h-9 w-9 stroke-[4]" />
-              </div>
-            </div>
-            <StickerBadge tone="muted" className="mb-6 w-fit rotate-[-2deg]">
-              {selectedTag ? "分类文章" : "全部文章"}
-            </StickerBadge>
-            <h1 className="max-w-5xl text-6xl font-black uppercase leading-none tracking-[0] sm:text-8xl lg:text-9xl">
-              <span className="block">{selectedTag ? selectedTag : "全部"}</span>
-              <span className="neo-outline-text block">文章</span>
+            {/* BLOG label */}
+            <span className="mb-3 inline-block text-[11px] font-medium uppercase tracking-wider text-olive">
+              Blog
+            </span>
+            <h1
+              className="max-w-4xl text-[36px] leading-[1.15] text-ink sm:text-[48px] lg:text-[56px]"
+              style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}
+            >
+              {selectedTag ? selectedTag : "所有文章"}
             </h1>
-            <p className="mt-6 max-w-3xl border-l-8 border-black bg-white px-5 py-4 text-xl font-bold leading-snug shadow-[6px_6px_0_0_#000] sm:text-2xl">
-              {selectedTag ? `包含「${selectedTag}」分类的文章。` : "所有已经整理进 Echo Space 的文章、笔记与研究。"}
+            <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-muted">
+              {selectedTag
+                ? `包含「${selectedTag}」分类的文章。`
+                : "所有已经整理进 Echo Space 的文章、笔记与研究。"}
               {articles.length > 0 ? `共 ${articles.length} 篇。` : "暂时还没有文章。"}
             </p>
-            {selectedTag ? (
+            {selectedTag && (
               <Link
                 href="/articles"
-                className="mt-6 inline-flex min-h-12 items-center gap-2 border-4 border-black bg-neo-secondary px-4 py-2 text-sm font-black uppercase tracking-[0.14em] shadow-[5px_5px_0_0_#000]"
+                className="mt-4 inline-flex items-center gap-1 text-[13px] font-medium text-olive transition-colors hover:text-olive-dark"
               >
                 查看全部文章
-                <BookOpen aria-hidden="true" className="h-5 w-5 stroke-[4]" />
+                <ArrowRight aria-hidden="true" className="h-4 w-4" />
               </Link>
-            ) : null}
+            )}
           </div>
         </section>
 
-        {categoryNames.length > 0 ? <MarqueeStrip items={categoryNames} /> : null}
+        {/* Category tags */}
+        {categoryNames.length > 0 && (
+          <MarqueeStrip items={categoryNames} tone="olive" />
+        )}
+
+        {/* Active tag filter */}
+        {selectedTag && (
+          <div className="bg-canvas px-6 py-3 lg:px-8">
+            <div className="mx-auto max-w-7xl">
+              <span className="inline-flex items-center rounded-full bg-olive/10 px-3 py-1 text-[11px] font-medium text-olive">
+                {selectedTag}
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Article list */}
-        <section className="bg-neo-bg px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
+        <section className="bg-canvas px-6 py-14 sm:py-16 lg:px-8">
           <div className="mx-auto max-w-7xl">
             {articles.length > 0 ? (
               <ArticleList articles={articles} />
             ) : (
-              <div className="border-4 border-black bg-white p-8 shadow-[8px_8px_0_0_#000]">
-                <BookOpen aria-hidden="true" className="mb-4 h-10 w-10 stroke-[4]" />
-                <p className="text-2xl font-black">
-                  {selectedTag ? `「${selectedTag}」分类下还没有已发布文章。` : "还没有已发布文章。"}
+              <div className="rounded-[10px] border border-line bg-surface p-8 text-center">
+                <p
+                  className="text-[22px] text-ink"
+                  style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}
+                >
+                  {selectedTag
+                    ? `「${selectedTag}」分类下还没有已发布文章。`
+                    : "还没有已发布文章。"}
                 </p>
                 <Link
                   href="/articles"
-                  className="mt-6 inline-flex min-h-12 items-center gap-2 border-4 border-black bg-neo-secondary px-4 py-2 text-sm font-black uppercase tracking-[0.14em] shadow-[5px_5px_0_0_#000]"
+                  className="mt-4 inline-flex items-center gap-1 text-[13px] font-medium text-olive transition-colors hover:text-olive-dark"
                 >
                   查看全部文章
-                  <BookOpen aria-hidden="true" className="h-5 w-5 stroke-[4]" />
+                  <ArrowRight aria-hidden="true" className="h-4 w-4" />
                 </Link>
               </div>
             )}
@@ -87,25 +101,28 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
         </section>
 
         {/* Bottom CTA */}
-        <section className="border-t-4 border-black bg-black px-4 py-16 text-white sm:px-6 lg:px-8">
+        <section className="border-t border-line bg-surface-warm px-6 py-16 lg:px-8">
           <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1fr_0.65fr] lg:items-center">
             <div>
-              <StickerBadge tone="accent" className="mb-5 rotate-2">
+              <span className="mb-3 inline-block text-[11px] font-medium uppercase tracking-wider text-olive">
                 继续探索
-              </StickerBadge>
-              <h2 className="neo-text-shadow text-5xl font-black uppercase leading-none tracking-[0] sm:text-7xl">
-                回到首页。
+              </span>
+              <h2
+                className="text-[28px] leading-tight text-ink sm:text-[36px]"
+                style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}
+              >
+                回到首页
               </h2>
             </div>
-            <div className="grid gap-4">
+            <div>
               <Link
                 href="/"
-                className="inline-flex min-h-14 items-center justify-between border-4 border-black bg-neo-secondary px-6 py-3 text-sm font-black uppercase tracking-[0.14em] shadow-[6px_6px_0_0_#000] transition duration-100 ease-linear active:translate-x-[3px] active:translate-y-[3px] active:shadow-none"
+                className="inline-flex items-center gap-2 rounded-full bg-olive-dark px-5 py-2 text-[13px] font-medium text-white transition-opacity hover:opacity-90"
               >
                 返回首页
-                <BookOpen aria-hidden="true" className="h-5 w-5 stroke-[4]" />
+                <ArrowRight aria-hidden="true" className="h-4 w-4" />
               </Link>
-              <p className="text-lg font-black leading-tight opacity-70">
+              <p className="mt-3 text-[13px] leading-relaxed text-muted">
                 页面先小而完整，后续再长出更多房间。
               </p>
             </div>

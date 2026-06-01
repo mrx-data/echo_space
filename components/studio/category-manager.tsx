@@ -152,62 +152,78 @@ export function CategoryManager({ initialCategories, initialUsageCounts }: Categ
   return (
     <div className="grid gap-8">
       {(error || message) && (
-        <div className={`border-4 border-black px-4 py-3 text-sm font-black ${error ? "bg-neo-accent" : "bg-neo-secondary"}`}>
+        <div
+          className={`rounded-[10px] border px-4 py-3 text-sm ${
+            error
+              ? "border-red-200 bg-red-50 text-red-700"
+              : "border-[#e8e4db] bg-[#f7f5f0] text-[#596044]"
+          }`}
+        >
           {error || message}
         </div>
       )}
 
-      <section className="border-4 border-black bg-white p-5 shadow-[8px_8px_0_0_#000]">
+      <section className="editorial-card p-6">
         <div className="mb-4 flex items-center gap-2">
-          <Plus aria-hidden="true" className="h-5 w-5 stroke-[4]" />
-          <h2 className="text-lg font-black uppercase tracking-[0.14em]">新建分类</h2>
+          <Plus aria-hidden="true" className="h-4 w-4 text-[#596044]" />
+          <h2 className="font-['Cormorant_Garamond',Georgia,serif] text-xl font-semibold text-[#596044]">
+            新建分类
+          </h2>
         </div>
         <div className="grid gap-4 md:grid-cols-[0.8fr_1.2fr_0.4fr_auto] md:items-end">
-          <label className="grid gap-1">
-            <span className="text-sm font-black uppercase tracking-[0.14em]">分类名称</span>
+          <label className="grid gap-1.5">
+            <span className="text-xs font-medium uppercase tracking-wide text-[#64645c]">分类名称</span>
             <input
               type="text"
               value={form.name}
               onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
-              className="w-full border-4 border-black bg-neo-bg px-4 py-3 text-base font-bold focus:outline-none focus:ring-4 focus:ring-neo-secondary"
+              className="w-full rounded-[10px] border border-[#e8e4db] bg-[#f7f5f0] px-4 py-2.5 text-sm text-[#171713] focus:border-[#596044] focus:outline-none focus:ring-2 focus:ring-[#596044]/20"
             />
           </label>
-          <label className="grid gap-1">
-            <span className="text-sm font-black uppercase tracking-[0.14em]">描述</span>
+          <label className="grid gap-1.5">
+            <span className="text-xs font-medium uppercase tracking-wide text-[#64645c]">描述</span>
             <input
               type="text"
               value={form.description}
               onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))}
-              className="w-full border-4 border-black bg-neo-bg px-4 py-3 text-base font-bold focus:outline-none focus:ring-4 focus:ring-neo-secondary"
+              className="w-full rounded-[10px] border border-[#e8e4db] bg-[#f7f5f0] px-4 py-2.5 text-sm text-[#171713] focus:border-[#596044] focus:outline-none focus:ring-2 focus:ring-[#596044]/20"
             />
           </label>
-          <label className="grid gap-1">
-            <span className="text-sm font-black uppercase tracking-[0.14em]">排序</span>
+          <label className="grid gap-1.5">
+            <span className="text-xs font-medium uppercase tracking-wide text-[#64645c]">排序</span>
             <input
               type="number"
               value={form.sortOrder}
               onChange={(event) => setForm((prev) => ({ ...prev, sortOrder: event.target.value }))}
-              className="w-full border-4 border-black bg-neo-bg px-4 py-3 text-base font-bold focus:outline-none focus:ring-4 focus:ring-neo-secondary"
+              className="w-full rounded-[10px] border border-[#e8e4db] bg-[#f7f5f0] px-4 py-2.5 text-sm text-[#171713] focus:border-[#596044] focus:outline-none focus:ring-2 focus:ring-[#596044]/20"
             />
           </label>
           <button
             type="button"
             onClick={createCategory}
             disabled={activeAction === "create"}
-            className="inline-flex min-h-14 items-center justify-center gap-2 border-4 border-black bg-neo-secondary px-5 py-3 text-sm font-black uppercase tracking-[0.14em] shadow-[5px_5px_0_0_#000] disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[#485035] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-[#596044] disabled:opacity-50"
           >
-            {activeAction === "create" ? <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin stroke-[4]" /> : <Plus aria-hidden="true" className="h-4 w-4 stroke-[4]" />}
+            {activeAction === "create" ? (
+              <Loader2 aria-hidden="true" className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Plus aria-hidden="true" className="h-3.5 w-3.5" />
+            )}
             创建
           </button>
         </div>
-        <p className="mt-3 text-xs font-bold opacity-60">分类名称不能为空，也不能包含逗号。v1 不支持重命名分类名称。</p>
+        <p className="mt-3 text-xs text-[#9a988f]">
+          分类名称不能为空，也不能包含逗号。v1 不支持重命名分类名称。
+        </p>
       </section>
 
       <section className="grid gap-4">
         {categories.length === 0 ? (
-          <div className="border-4 border-black bg-white p-8 shadow-[8px_8px_0_0_#000]">
-            <Hash aria-hidden="true" className="mb-4 h-10 w-10 stroke-[4]" />
-            <p className="text-2xl font-black">还没有分类。先创建一个分类，再回到文章编辑器选择。</p>
+          <div className="editorial-card p-8 text-center">
+            <Hash aria-hidden="true" className="mx-auto mb-4 h-10 w-10 text-[#9a988f]" />
+            <p className="text-lg text-[#64645c]">
+              还没有分类。先创建一个分类，再回到文章编辑器选择。
+            </p>
           </div>
         ) : (
           categories.map((category) => {
@@ -220,16 +236,18 @@ export function CategoryManager({ initialCategories, initialUsageCounts }: Categ
             return (
               <div
                 key={category.name}
-                className="grid gap-4 border-4 border-black bg-white p-5 shadow-[7px_7px_0_0_#000] lg:grid-cols-[0.6fr_1fr_0.25fr_auto] lg:items-end"
+                className="editorial-card grid gap-4 p-5 lg:grid-cols-[0.6fr_1fr_0.25fr_auto] lg:items-end"
               >
                 <div>
-                  <span className="mb-2 inline-flex border-4 border-black bg-neo-muted px-3 py-1 text-xs font-black uppercase tracking-[0.14em]">
+                  <span className="mb-2 inline-flex rounded-full bg-[#f7f5f0] px-2.5 py-0.5 text-xs text-[#64645c]">
                     {usageCount} 篇
                   </span>
-                  <h3 className="text-2xl font-black leading-tight">{category.name}</h3>
+                  <h3 className="font-['Cormorant_Garamond',Georgia,serif] text-xl font-semibold text-[#171713]">
+                    {category.name}
+                  </h3>
                 </div>
-                <label className="grid gap-1">
-                  <span className="text-xs font-black uppercase tracking-[0.14em]">描述</span>
+                <label className="grid gap-1.5">
+                  <span className="text-xs font-medium uppercase tracking-wide text-[#64645c]">描述</span>
                   <input
                     type="text"
                     value={edit.description}
@@ -239,11 +257,11 @@ export function CategoryManager({ initialCategories, initialUsageCounts }: Categ
                         [category.name]: { ...edit, description: event.target.value },
                       }))
                     }
-                    className="w-full border-4 border-black bg-neo-bg px-4 py-3 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-neo-secondary"
+                    className="w-full rounded-[10px] border border-[#e8e4db] bg-[#f7f5f0] px-4 py-2.5 text-sm text-[#171713] focus:border-[#596044] focus:outline-none focus:ring-2 focus:ring-[#596044]/20"
                   />
                 </label>
-                <label className="grid gap-1">
-                  <span className="text-xs font-black uppercase tracking-[0.14em]">排序</span>
+                <label className="grid gap-1.5">
+                  <span className="text-xs font-medium uppercase tracking-wide text-[#64645c]">排序</span>
                   <input
                     type="number"
                     value={edit.sortOrder}
@@ -253,26 +271,34 @@ export function CategoryManager({ initialCategories, initialUsageCounts }: Categ
                         [category.name]: { ...edit, sortOrder: event.target.value },
                       }))
                     }
-                    className="w-full border-4 border-black bg-neo-bg px-4 py-3 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-neo-secondary"
+                    className="w-full rounded-[10px] border border-[#e8e4db] bg-[#f7f5f0] px-4 py-2.5 text-sm text-[#171713] focus:border-[#596044] focus:outline-none focus:ring-2 focus:ring-[#596044]/20"
                   />
                 </label>
-                <div className="flex gap-3">
+                <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => updateCategory(category.name)}
                     disabled={activeAction === `save:${category.name}`}
-                    className="inline-flex items-center gap-2 border-4 border-black bg-black px-4 py-3 text-sm font-black uppercase tracking-[0.14em] text-white shadow-[4px_4px_0_0_#000] disabled:opacity-60"
+                    className="inline-flex items-center gap-1.5 rounded-full bg-[#485035] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#596044] disabled:opacity-50"
                   >
-                    {activeAction === `save:${category.name}` ? <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin stroke-[4]" /> : <Save aria-hidden="true" className="h-4 w-4 stroke-[4]" />}
+                    {activeAction === `save:${category.name}` ? (
+                      <Loader2 aria-hidden="true" className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Save aria-hidden="true" className="h-3.5 w-3.5" />
+                    )}
                     保存
                   </button>
                   <button
                     type="button"
                     onClick={() => deleteCategory(category.name)}
                     disabled={usageCount > 0 || activeAction === `delete:${category.name}`}
-                    className="inline-flex items-center gap-2 border-4 border-black bg-neo-accent px-4 py-3 text-sm font-black uppercase tracking-[0.14em] shadow-[4px_4px_0_0_#000] disabled:cursor-not-allowed disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-[#e8e4db] bg-white px-4 py-2 text-sm text-[#9a988f] transition hover:border-red-300 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    {activeAction === `delete:${category.name}` ? <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin stroke-[4]" /> : <Trash2 aria-hidden="true" className="h-4 w-4 stroke-[4]" />}
+                    {activeAction === `delete:${category.name}` ? (
+                      <Loader2 aria-hidden="true" className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Trash2 aria-hidden="true" className="h-3.5 w-3.5" />
+                    )}
                     删除
                   </button>
                 </div>

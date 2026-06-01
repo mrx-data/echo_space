@@ -22,6 +22,8 @@ export type Article = {
     author: string;
     url: string;
   };
+  contentMd?: string;
+  coverImage?: string;
   sections: ArticleSection[];
 };
 

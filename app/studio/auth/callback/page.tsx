@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function StudioAuthCallbackPage() {
   return (
-    <main className="grid min-h-screen place-items-center bg-neo-bg px-4 py-12">
+    <main className="grid min-h-screen place-items-center bg-[#f7f5f0] px-4 py-12">
       <AuthCallback />
     </main>
   );

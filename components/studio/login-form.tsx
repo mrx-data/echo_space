@@ -62,11 +62,19 @@ export function LoginForm() {
   return (
     <form
       onSubmit={handlePasswordLogin}
-      className="grid max-w-xl gap-5 border-4 border-black bg-white p-6 shadow-[10px_10px_0_0_#000]"
+      className="editorial-card grid gap-5 p-8"
     >
-      <label className="grid gap-2">
-        <span className="inline-flex items-center gap-2 text-sm font-black uppercase tracking-[0.14em]">
-          <Mail aria-hidden="true" className="h-5 w-5 stroke-[4]" />
+      <div className="text-center">
+        <h1 className="font-['Cormorant_Garamond',Georgia,serif] text-3xl font-semibold text-[#596044]">
+          ECHO STUDIO
+        </h1>
+        <p className="mt-1 text-sm text-[#64645c]">
+          管理员登录 · 单人内容工作台
+        </p>
+      </div>
+
+      <label className="grid gap-1.5">
+        <span className="text-xs font-medium uppercase tracking-wide text-[#64645c]">
           管理员邮箱
         </span>
         <input
@@ -75,13 +83,12 @@ export function LoginForm() {
           onChange={(event) => setEmail(event.target.value)}
           placeholder="you@example.com"
           required
-          className="w-full border-4 border-black bg-neo-bg px-4 py-3 text-base font-bold placeholder:opacity-40 focus:outline-none focus:ring-4 focus:ring-neo-secondary"
+          className="w-full rounded-[10px] border border-[#e8e4db] bg-[#f7f5f0] px-4 py-3 text-base text-[#171713] placeholder:text-[#9a988f] focus:border-[#596044] focus:outline-none focus:ring-2 focus:ring-[#596044]/20"
         />
       </label>
 
-      <label className="grid gap-2">
-        <span className="inline-flex items-center gap-2 text-sm font-black uppercase tracking-[0.14em]">
-          <Lock aria-hidden="true" className="h-5 w-5 stroke-[4]" />
+      <label className="grid gap-1.5">
+        <span className="text-xs font-medium uppercase tracking-wide text-[#64645c]">
           密码
         </span>
         <input
@@ -90,40 +97,42 @@ export function LoginForm() {
           onChange={(event) => setPassword(event.target.value)}
           placeholder="••••••••"
           required
-          className="w-full border-4 border-black bg-neo-bg px-4 py-3 text-base font-bold placeholder:opacity-40 focus:outline-none focus:ring-4 focus:ring-neo-secondary"
+          className="w-full rounded-[10px] border border-[#e8e4db] bg-[#f7f5f0] px-4 py-3 text-base text-[#171713] placeholder:text-[#9a988f] focus:border-[#596044] focus:outline-none focus:ring-2 focus:ring-[#596044]/20"
         />
       </label>
 
       <button
         type="submit"
         disabled={isLoading}
-        className="inline-flex min-h-14 items-center justify-center gap-2 border-4 border-black bg-neo-secondary px-6 py-3 text-sm font-black uppercase tracking-[0.14em] shadow-[6px_6px_0_0_#000] transition duration-100 active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:opacity-60"
+        className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#485035] px-6 py-3 text-sm font-medium text-white transition hover:bg-[#596044] disabled:opacity-50"
       >
         {isLoading ? (
-          <Loader2 aria-hidden="true" className="h-5 w-5 animate-spin stroke-[4]" />
+          <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
         ) : (
-          <LogIn aria-hidden="true" className="h-5 w-5 stroke-[4]" />
+          <LogIn aria-hidden="true" className="h-4 w-4" />
         )}
         登录
       </button>
 
-      <div className="border-t-4 border-black pt-4">
-        <p className="mb-3 text-xs font-bold opacity-60">或者使用 Magic Link：</p>
+      <div className="border-t border-[#e8e4db] pt-4">
+        <p className="mb-3 text-xs text-[#9a988f]">或者使用 Magic Link：</p>
         <button
           type="button"
           onClick={handleMagicLink}
           disabled={isLoading}
-          className="inline-flex w-full items-center justify-center gap-2 border-4 border-black bg-neo-muted px-5 py-3 text-sm font-black uppercase tracking-[0.14em] shadow-[4px_4px_0_0_#000] transition duration-100 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-60"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#e8e4db] bg-white px-5 py-3 text-sm font-medium text-[#171713] transition hover:border-[#596044] hover:text-[#596044] disabled:opacity-50"
         >
-          <Send aria-hidden="true" className="h-4 w-4 stroke-[4]" />
+          <Send aria-hidden="true" className="h-3.5 w-3.5" />
           发送登录链接
         </button>
       </div>
 
       {message ? (
         <p
-          className={`border-4 border-black px-4 py-3 text-sm font-black ${
-            status === "error" ? "bg-neo-accent" : "bg-neo-muted"
+          className={`rounded-[10px] px-4 py-3 text-sm ${
+            status === "error"
+              ? "bg-red-50 text-red-700 border border-red-200"
+              : "bg-[#f7f5f0] text-[#596044] border border-[#e8e4db]"
           }`}
         >
           {message}

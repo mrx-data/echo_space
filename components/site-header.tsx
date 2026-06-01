@@ -1,64 +1,52 @@
 import Link from "next/link";
-import { LayoutDashboard, Menu, PenLine } from "lucide-react";
-import { NeoButton } from "@/components/neo-button";
-import { getFeaturedArticle } from "@/lib/articles-db";
 
-export async function SiteHeader() {
-  const featuredArticle = await getFeaturedArticle();
-  const articleHref = featuredArticle ? `/content/${featuredArticle.slug}` : "/articles";
-
+export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-50 border-b-4 border-black bg-neo-bg">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-        <Link
-          href="/"
-          className="-rotate-1 border-4 border-black bg-neo-accent px-4 py-2 text-xl font-black uppercase tracking-[0] shadow-[5px_5px_0_0_#000] transition duration-100 ease-linear hover:rotate-0 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-black focus-visible:ring-offset-4 focus-visible:ring-offset-neo-bg"
-          aria-label="Echo Space 首页"
-        >
-          Echo Space
+    <header className="sticky top-0 z-50 border-b border-line bg-surface">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-4 lg:px-8">
+        {/* Brand */}
+        <Link href="/" className="flex flex-col" aria-label="Echo Space 首页">
+          <span
+            className="text-[17px] leading-tight text-ink"
+            style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}
+          >
+            Echo Space
+          </span>
+          <span className="text-[10px] text-faint">
+            个人知识库
+          </span>
         </Link>
-        <div className="hidden items-center gap-3 md:flex">
-          <Link className="border-2 border-transparent px-3 py-2 text-sm font-black uppercase tracking-[0.16em] transition duration-100 hover:border-black hover:bg-neo-secondary" href="/#about">
-            关于
+
+        {/* Center nav */}
+        <div className="hidden items-center gap-8 md:flex">
+          <Link
+            href="/"
+            className="text-[13px] font-bold text-ink transition-colors hover:text-olive"
+          >
+            首页
           </Link>
-          <Link className="border-2 border-transparent px-3 py-2 text-sm font-black uppercase tracking-[0.16em] transition duration-100 hover:border-black hover:bg-neo-accent" href="/#work">
-            作品
-          </Link>
-          <Link className="border-2 border-transparent px-3 py-2 text-sm font-black uppercase tracking-[0.16em] transition duration-100 hover:border-black hover:bg-neo-muted" href="/articles">
+          <Link
+            href="/articles"
+            className="relative text-[13px] text-muted transition-colors hover:text-ink"
+          >
             文章
           </Link>
-          <NeoButton href={articleHref} variant="secondary" className="min-h-12 px-4 py-2" showArrow={false}>
-            阅读
-          </NeoButton>
           <Link
-            href="/studio/articles/new"
-            className="inline-flex min-h-12 items-center gap-2 border-4 border-black bg-neo-accent px-4 py-2 text-sm font-black uppercase tracking-[0.14em] shadow-[5px_5px_0_0_#000] transition duration-100 ease-linear hover:-translate-y-0.5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+            href="/#about"
+            className="text-[13px] text-muted transition-colors hover:text-ink"
           >
-            <PenLine aria-hidden="true" className="h-4 w-4 stroke-[4]" />
-            写作
-          </Link>
-          <Link
-            href="/studio/articles"
-            className="inline-flex min-h-12 items-center gap-2 border-4 border-black bg-black px-4 py-2 text-sm font-black uppercase tracking-[0.14em] text-white shadow-[5px_5px_0_0_#000] transition duration-100 ease-linear hover:-translate-y-0.5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
-          >
-            <LayoutDashboard aria-hidden="true" className="h-4 w-4 stroke-[4]" />
-            管理
+            关于
           </Link>
         </div>
+
+        {/* Right CTA */}
         <Link
-          href="/articles"
-          className="flex h-14 w-14 items-center justify-center border-4 border-black bg-white shadow-[4px_4px_0_0_#000] transition duration-100 ease-linear focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-black focus-visible:ring-offset-4 focus-visible:ring-offset-neo-bg active:translate-x-[2px] active:translate-y-[2px] active:shadow-none md:hidden"
-          aria-label="打开内容页"
+          href="mailto:2921108474@qq.com"
+          className="inline-flex h-[34px] w-[136px] items-center justify-center rounded-full bg-olive-dark text-[13px] font-medium text-white transition-opacity hover:opacity-90"
         >
-          <Menu aria-hidden="true" className="h-7 w-7 stroke-[4]" />
+          Let&apos;s connect
         </Link>
       </nav>
-      <div className="border-t-4 border-black bg-black px-4 py-2 text-center text-xs font-black uppercase tracking-[0.22em] text-white">
-        <span className="inline-flex items-center gap-2">
-          <PenLine aria-hidden="true" className="h-4 w-4 stroke-[4]" />
-          文章、研究、AI 工作流与工具实践。
-        </span>
-      </div>
     </header>
   );
 }

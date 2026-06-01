@@ -5,7 +5,7 @@ export function NeoCard({ className, ...props }: ComponentPropsWithoutRef<"artic
   return (
     <article
       className={cn(
-        "border-4 border-black bg-white shadow-[8px_8px_0_0_#000] transition duration-200 ease-out hover:-translate-y-1 hover:shadow-[12px_12px_0_0_#000]",
+        "rounded-[10px] border border-line bg-surface shadow-[0_12px_30px_rgba(31,29,24,0.08)] transition-shadow duration-200 hover:shadow-[0_20px_45px_rgba(31,29,24,0.12)]",
         className,
       )}
       {...props}

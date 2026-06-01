@@ -1,22 +1,41 @@
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
 @import "tailwindcss";
 
 :root {
-  --neo-bg: #fffdf5;
-  --neo-ink: #000000;
-  --neo-accent: #ff6b6b;
-  --neo-secondary: #ffd93d;
-  --neo-muted: #c4b5fd;
-  --neo-white: #ffffff;
-  --font-space-grotesk: "Space Grotesk", "Space Grotesk Fallback", ui-sans-serif, system-ui, sans-serif;
+  /* Color Tokens */
+  --canvas: #fbfaf7;
+  --surface: #ffffff;
+  --surface-warm: #f7f5f0;
+  --ink: #171713;
+  --muted: #64645c;
+  --faint: #9a988f;
+  --line: #e8e4db;
+  --olive: #596044;
+  --olive-dark: #485035;
+  --dot: #d8d1c2;
+
+  /* Font Families */
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-body: "Inter", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+
+  /* Shadows */
+  --shadow-card: 0 12px 30px rgba(31, 29, 24, 0.08);
+  --shadow-float: 0 20px 45px rgba(31, 29, 24, 0.12);
 }
 
 @theme inline {
-  --color-neo-bg: var(--neo-bg);
-  --color-neo-ink: var(--neo-ink);
-  --color-neo-accent: var(--neo-accent);
-  --color-neo-secondary: var(--neo-secondary);
-  --color-neo-muted: var(--neo-muted);
-  --font-sans: "Space Grotesk", "Space Grotesk Fallback", ui-sans-serif, system-ui, sans-serif;
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-warm: var(--surface-warm);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-olive: var(--olive);
+  --color-olive-dark: var(--olive-dark);
+  --color-dot: var(--dot);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
 }
 
 * {
@@ -24,24 +43,22 @@
 }
 
 html {
-  background: var(--neo-bg);
+  background: var(--canvas);
   scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(circle, rgba(0, 0, 0, 0.12) 1.2px, transparent 1.8px) 0 0 / 28px 28px,
-    var(--neo-bg);
-  color: var(--neo-ink);
-  font-family: var(--font-space-grotesk), "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  font-weight: 700;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-weight: 400;
 }
 
 ::selection {
-  background: var(--neo-secondary);
-  color: var(--neo-ink);
+  background: rgba(89, 96, 68, 0.15);
+  color: var(--ink);
 }
 
 @layer base {
@@ -56,97 +73,39 @@ a {
   -webkit-tap-highlight-color: transparent;
 }
 
-.neo-grid {
-  background-size: 42px 42px;
-  background-image:
-    linear-gradient(to right, rgba(0, 0, 0, 0.14) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.14) 1px, transparent 1px);
+/* ── Dot Grid Pattern ── */
+
+.dot-grid {
+  background-image: radial-gradient(circle, var(--dot) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
-.neo-halftone {
-  background-image: radial-gradient(#000 1.5px, transparent 1.5px);
-  background-size: 18px 18px;
+/* ── Editorial Card ── */
+
+.editorial-card {
+  background: var(--surface);
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-card);
 }
 
-.neo-noise {
-  position: relative;
+.editorial-card-float {
+  background: var(--surface);
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-float);
 }
 
-.neo-noise::after {
-  content: "";
-  pointer-events: none;
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' opacity='0.18' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  mix-blend-mode: multiply;
-}
+/* ── Utility: transition ── */
 
-.neo-outline-text {
-  color: transparent;
-  -webkit-text-stroke: 2px var(--neo-ink);
-  text-stroke: 2px var(--neo-ink);
-}
-
-.neo-text-shadow {
-  text-shadow: 4px 4px 0 var(--neo-ink);
-}
-
-.animate-spin-slow {
-  animation: spin-slow 10s linear infinite;
-}
-
-.animate-wiggle {
-  animation: wiggle 2.5s steps(2, end) infinite;
-}
-
-@keyframes spin-slow {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-33.333%);
-  }
-}
-
-@keyframes wiggle {
-  0%,
-  100% {
-    transform: rotate(-2deg);
-  }
-  50% {
-    transform: rotate(2deg);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
-  }
+.transition-editorial {
+  transition: all 0.2s ease;
 }
 
 /* ── Article Font Families ── */
 
 .article-font-sans {
-  font-family: var(--font-space-grotesk), "Space Grotesk", "PingFang SC",
-    "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  font-family: var(--font-body);
 }
 
 .article-font-serif {
@@ -176,26 +135,26 @@ a {
   line-height: 1.8;
 }
 
-/* ── Markdown Content Styles ── */
+/* ── Markdown Content Styles (Editorial) ── */
 
 .neo-markdown h1,
 .neo-markdown h2,
 .neo-markdown h3,
 .neo-markdown h4 {
-  font-weight: 900;
+  font-family: var(--font-display);
+  font-weight: 600;
   letter-spacing: 0;
   margin-top: 1.5em;
   margin-bottom: 0.5em;
+  color: var(--ink);
 }
 
 .neo-markdown h1 {
   font-size: 1.75em;
-  text-transform: uppercase;
 }
 
 .neo-markdown h2 {
   font-size: 1.4em;
-  text-transform: uppercase;
 }
 
 .neo-markdown h3 {
@@ -204,14 +163,14 @@ a {
 
 .neo-markdown h4 {
   font-size: 1em;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
 }
 
 .neo-markdown p {
   margin-bottom: 0.75em;
-  font-weight: 700;
+  font-weight: 400;
   line-height: inherit;
+  color: var(--muted);
 }
 
 .neo-markdown p:last-child {
@@ -220,30 +179,29 @@ a {
 
 /* Inline code */
 .neo-markdown code:not(pre code) {
-  border: 3px solid var(--neo-ink);
-  background: var(--neo-secondary);
+  background: var(--surface-warm);
   padding: 0.1em 0.35em;
   font-size: 0.88em;
-  font-weight: 800;
+  font-weight: 500;
   font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+  border-radius: 4px;
 }
 
 /* Code blocks */
 .neo-markdown pre {
-  border: 4px solid var(--neo-ink);
-  background: var(--neo-ink);
-  color: var(--neo-bg);
+  background: #1a1a18;
+  color: #e8e4db;
   padding: 1em 1.25em;
   overflow-x: auto;
   margin: 1em 0;
-  box-shadow: 6px 6px 0 0 rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
   font-size: 0.85em;
   line-height: 1.6;
 }
 
 .neo-markdown pre code {
   font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
-  font-weight: 600;
+  font-weight: 400;
   border: none;
   background: none;
   padding: 0;
@@ -252,17 +210,20 @@ a {
 
 /* Blockquotes */
 .neo-markdown blockquote {
-  border-left: 6px solid var(--neo-ink);
-  background: var(--neo-secondary);
+  border-left: 3px solid var(--olive);
+  background: transparent;
   padding: 0.75em 1em;
   margin: 1em 0;
-  font-weight: 800;
-  box-shadow: 5px 5px 0 0 var(--neo-ink);
-  transform: rotate(-0.5deg);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--muted);
 }
 
 .neo-markdown blockquote p {
   margin-bottom: 0;
+  font-style: inherit;
+  font-family: inherit;
 }
 
 /* Lists */
@@ -274,12 +235,13 @@ a {
 
 .neo-markdown li {
   margin-bottom: 0.35em;
-  font-weight: 700;
+  font-weight: 400;
   line-height: inherit;
+  color: var(--muted);
 }
 
 .neo-markdown ul li {
-  list-style-type: "▸ ";
+  list-style-type: disc;
 }
 
 .neo-markdown ol li {
@@ -287,25 +249,26 @@ a {
 }
 
 .neo-markdown li::marker {
-  font-weight: 900;
+  color: var(--olive);
 }
 
 /* Links */
 .neo-markdown a {
   text-decoration: underline;
-  text-decoration-thickness: 3px;
+  text-decoration-thickness: 1px;
   text-underline-offset: 3px;
-  font-weight: 800;
-  transition: background 0.1s;
+  color: var(--olive);
+  transition: opacity 0.1s;
 }
 
 .neo-markdown a:hover {
-  background: var(--neo-secondary);
+  opacity: 0.7;
 }
 
 /* Bold and italic */
 .neo-markdown strong {
-  font-weight: 900;
+  font-weight: 600;
+  color: var(--ink);
 }
 
 .neo-markdown em {
@@ -315,15 +278,14 @@ a {
 /* Horizontal rules */
 .neo-markdown hr {
   border: none;
-  border-top: 4px solid var(--neo-ink);
+  border-top: 1px solid var(--line);
   margin: 1.5em 0;
 }
 
 /* Images */
 .neo-markdown img {
   max-width: 100%;
-  border: 4px solid var(--neo-ink);
-  box-shadow: 6px 6px 0 0 var(--neo-ink);
+  border-radius: 8px;
   margin: 1em 0;
 }
 
@@ -331,34 +293,55 @@ a {
 .neo-markdown table {
   width: 100%;
   border-collapse: collapse;
-  border: 4px solid var(--neo-ink);
+  border: 1px solid var(--line);
   margin: 1em 0;
   font-size: 0.9em;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .neo-markdown th,
 .neo-markdown td {
-  border: 3px solid var(--neo-ink);
+  border-bottom: 1px solid var(--line);
   padding: 0.5em 0.75em;
   text-align: left;
-  font-weight: 700;
 }
 
 .neo-markdown th {
-  background: var(--neo-ink);
-  color: var(--neo-bg);
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  background: var(--surface-warm);
+  font-weight: 600;
   font-size: 0.85em;
-}
-
-.neo-markdown tr:nth-child(even) td {
-  background: rgba(0, 0, 0, 0.04);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 /* Task lists */
 .neo-markdown input[type="checkbox"] {
   margin-right: 0.5em;
-  accent-color: var(--neo-ink);
+  accent-color: var(--olive);
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-33.333%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }

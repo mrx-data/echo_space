@@ -2,22 +2,21 @@ import type { ComponentPropsWithoutRef } from "react";
 import { cn } from "@/lib/utils";
 
 type StickerBadgeProps = ComponentPropsWithoutRef<"span"> & {
-  tone?: "accent" | "secondary" | "muted" | "white" | "black";
+  tone?: "olive" | "warm" | "muted" | "white";
 };
 
 const tones = {
-  accent: "bg-neo-accent text-black",
-  secondary: "bg-neo-secondary text-black",
-  muted: "bg-neo-muted text-black",
-  white: "bg-white text-black",
-  black: "bg-black text-white",
+  olive: "bg-olive/10 text-olive",
+  warm: "bg-surface-warm text-muted",
+  muted: "bg-surface-warm text-faint",
+  white: "bg-surface text-muted border-line",
 };
 
-export function StickerBadge({ className, tone = "secondary", ...props }: StickerBadgeProps) {
+export function StickerBadge({ className, tone = "warm", ...props }: StickerBadgeProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center border-4 border-black px-4 py-2 text-xs font-black uppercase tracking-[0.18em] shadow-[4px_4px_0_0_#000] transition duration-200 ease-out hover:rotate-2",
+        "inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium tracking-wide",
         tones[tone],
         className,
       )}

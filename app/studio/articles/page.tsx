@@ -26,42 +26,48 @@ export default async function StudioArticlesPage({ searchParams }: StudioArticle
   });
   const hasFilters = Boolean(normalizedTag || normalizedQuery);
 
+  const statusStyles: Record<string, string> = {
+    draft: "bg-[#f7f5f0] text-[#64645c]",
+    published: "bg-[#596044]/10 text-[#596044]",
+    archived: "bg-[#f7f5f0] text-[#9a988f]",
+  };
+
   return (
     <>
       <StudioHeader />
-      <main className="min-h-screen bg-neo-bg px-4 py-10 sm:px-6 lg:px-8">
+      <main className="min-h-screen bg-[#fbfaf7] px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-7xl gap-8">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
             <div>
-              <span className="mb-4 inline-flex border-4 border-black bg-neo-muted px-4 py-2 text-sm font-black uppercase tracking-[0.16em] shadow-[4px_4px_0_0_#000]">
-                内容库
+              <span className="mb-2 text-xs font-medium uppercase tracking-widest text-[#596044]">
+                ARTICLES
               </span>
-              <h1 className="text-6xl font-black uppercase leading-none tracking-[0] sm:text-8xl">
-                Articles
+              <h1 className="font-['Cormorant_Garamond',Georgia,serif] text-4xl font-semibold text-[#171713] sm:text-5xl">
+                所有文章
               </h1>
-              <p className="mt-3 text-lg font-bold leading-snug">
+              <p className="mt-2 text-sm text-[#64645c]">
                 {hasFilters ? `筛选结果 ${filteredArticles.length} / ${articles.length} 篇` : `共 ${articles.length} 篇文章`}
               </p>
             </div>
             <Link
               href="/studio/articles/new"
-              className="inline-flex min-h-14 items-center justify-center gap-2 border-4 border-black bg-neo-secondary px-6 py-3 text-sm font-black uppercase tracking-[0.14em] shadow-[6px_6px_0_0_#000]"
+              className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[#485035] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-[#596044]"
             >
-              <Plus aria-hidden="true" className="h-5 w-5 stroke-[4]" />
+              <Plus aria-hidden="true" className="h-4 w-4" />
               新建文章
             </Link>
           </div>
 
           <form
             action="/studio/articles"
-            className="grid gap-4 border-4 border-black bg-white p-5 shadow-[8px_8px_0_0_#000] md:grid-cols-[0.8fr_1fr_auto_auto] md:items-end"
+            className="editorial-card grid gap-4 p-5 md:grid-cols-[0.8fr_1fr_auto_auto] md:items-end"
           >
-            <label className="grid gap-1">
-              <span className="text-sm font-black uppercase tracking-[0.14em]">分类筛选</span>
+            <label className="grid gap-1.5">
+              <span className="text-xs font-medium uppercase tracking-wide text-[#64645c]">分类筛选</span>
               <select
                 name="tag"
                 defaultValue={normalizedTag}
-                className="h-14 w-full border-4 border-black bg-neo-bg px-4 py-3 text-base font-bold focus:outline-none focus:ring-4 focus:ring-neo-secondary"
+                className="h-10 w-full rounded-[10px] border border-[#e8e4db] bg-[#f7f5f0] px-4 py-2 text-sm text-[#171713] focus:border-[#596044] focus:outline-none focus:ring-2 focus:ring-[#596044]/20"
               >
                 <option value="">全部分类</option>
                 {categories.map((category) => (
@@ -71,37 +77,37 @@ export default async function StudioArticlesPage({ searchParams }: StudioArticle
                 ))}
               </select>
             </label>
-            <label className="grid gap-1">
-              <span className="text-sm font-black uppercase tracking-[0.14em]">标题搜索</span>
+            <label className="grid gap-1.5">
+              <span className="text-xs font-medium uppercase tracking-wide text-[#64645c]">标题搜索</span>
               <input
                 type="search"
                 name="q"
                 defaultValue={query ?? ""}
                 placeholder="输入标题关键词"
-                className="h-14 w-full border-4 border-black bg-neo-bg px-4 py-3 text-base font-bold placeholder:opacity-40 focus:outline-none focus:ring-4 focus:ring-neo-secondary"
+                className="h-10 w-full rounded-[10px] border border-[#e8e4db] bg-[#f7f5f0] px-4 py-2 text-sm text-[#171713] placeholder:text-[#9a988f] focus:border-[#596044] focus:outline-none focus:ring-2 focus:ring-[#596044]/20"
               />
             </label>
             <button
               type="submit"
-              className="inline-flex min-h-14 items-center justify-center gap-2 border-4 border-black bg-neo-secondary px-5 py-3 text-sm font-black uppercase tracking-[0.14em] shadow-[5px_5px_0_0_#000]"
+              className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[#485035] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-[#596044]"
             >
-              <Search aria-hidden="true" className="h-5 w-5 stroke-[4]" />
+              <Search aria-hidden="true" className="h-4 w-4" />
               筛选
             </button>
             <Link
               href="/studio/articles"
-              className="inline-flex min-h-14 items-center justify-center gap-2 border-4 border-black bg-white px-5 py-3 text-sm font-black uppercase tracking-[0.14em] shadow-[5px_5px_0_0_#000]"
+              className="inline-flex items-center justify-center gap-1.5 rounded-full border border-[#e8e4db] bg-white px-5 py-2.5 text-sm text-[#64645c] transition hover:border-[#171713] hover:text-[#171713]"
             >
-              <X aria-hidden="true" className="h-5 w-5 stroke-[4]" />
+              <X aria-hidden="true" className="h-4 w-4" />
               清除
             </Link>
           </form>
 
           <div className="grid gap-4">
             {filteredArticles.length === 0 ? (
-              <div className="border-4 border-black bg-white p-8 shadow-[8px_8px_0_0_#000]">
-                <FileText aria-hidden="true" className="mb-4 h-10 w-10 stroke-[4]" />
-                <p className="text-2xl font-black">
+              <div className="editorial-card p-8 text-center">
+                <FileText aria-hidden="true" className="mx-auto mb-4 h-10 w-10 text-[#9a988f]" />
+                <p className="text-lg text-[#64645c]">
                   {hasFilters ? "没有匹配文章。可以清除筛选或换个关键词。" : "还没有文章。先从新建草稿开始。"}
                 </p>
               </div>
@@ -109,25 +115,31 @@ export default async function StudioArticlesPage({ searchParams }: StudioArticle
               filteredArticles.map((article) => (
                 <div
                   key={article.id}
-                  className="grid gap-4 border-4 border-black bg-white p-5 shadow-[7px_7px_0_0_#000] transition duration-100 hover:-translate-y-0.5 sm:grid-cols-[1fr_auto] sm:items-center"
+                  className="editorial-card grid gap-4 p-5 transition hover:-translate-y-0.5 sm:grid-cols-[1fr_auto] sm:items-center"
                 >
                   <Link href={`/studio/articles/${article.id}`} className="block">
-                    <div className="mb-3 flex flex-wrap gap-2 text-xs font-black uppercase tracking-[0.14em]">
-                      <span className="border-4 border-black bg-neo-secondary px-3 py-1">
+                    <div className="mb-2 flex flex-wrap items-center gap-2">
+                      <span
+                        className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          statusStyles[article.status] ?? statusStyles.draft
+                        }`}
+                      >
                         {article.status}
                       </span>
-                      <span className="inline-flex items-center gap-1 border-4 border-black bg-neo-muted px-3 py-1">
-                        <CalendarDays aria-hidden="true" className="h-4 w-4 stroke-[4]" />
+                      <span className="inline-flex items-center gap-1 text-xs text-[#9a988f]">
+                        <CalendarDays aria-hidden="true" className="h-3 w-3" />
                         {new Date(article.updated_at).toLocaleDateString("zh-CN")}
                       </span>
                     </div>
-                    <h2 className="text-2xl font-black leading-tight">{article.title || "未命名草稿"}</h2>
-                    <p className="mt-2 text-sm font-bold opacity-70">/content/{article.slug}</p>
+                    <h2 className="font-['Cormorant_Garamond',Georgia,serif] text-xl font-semibold text-[#171713] leading-snug">
+                      {article.title || "未命名草稿"}
+                    </h2>
+                    <p className="mt-1 text-xs text-[#9a988f]">/content/{article.slug}</p>
                     {article.tags.length > 0 ? (
-                      <div className="mt-3 flex flex-wrap gap-2">
+                      <div className="mt-2.5 flex flex-wrap gap-1.5">
                         {article.tags.map((tag) => (
                           <span
-                            className="border-4 border-black bg-neo-bg px-3 py-1 text-xs font-black uppercase tracking-[0.12em]"
+                            className="rounded-full bg-[#f7f5f0] px-2.5 py-0.5 text-xs text-[#64645c]"
                             key={tag}
                           >
                             {tag}
@@ -136,12 +148,12 @@ export default async function StudioArticlesPage({ searchParams }: StudioArticle
                       </div>
                     ) : null}
                   </Link>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     <Link
                       href={`/studio/articles/${article.id}`}
-                      className="inline-flex w-fit items-center gap-2 border-4 border-black bg-black px-4 py-2 text-sm font-black uppercase tracking-[0.14em] text-white shadow-[4px_4px_0_0_#000]"
+                      className="inline-flex items-center gap-1.5 rounded-full bg-[#485035] px-3 py-1.5 text-xs font-medium text-white transition hover:bg-[#596044]"
                     >
-                      <PenLine aria-hidden="true" className="h-4 w-4 stroke-[4]" />
+                      <PenLine aria-hidden="true" className="h-3 w-3" />
                       编辑
                     </Link>
                     <DeleteArticleButton articleId={article.id} />

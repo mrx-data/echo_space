@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { ArticleEditorForm } from "@/components/studio/article-editor-form";
 import { StudioHeader } from "@/components/studio/studio-shell";
@@ -17,8 +18,10 @@ export default async function NewStudioArticlePage() {
   return (
     <>
       <StudioHeader />
-      <main className="min-h-screen bg-neo-bg">
-        <ArticleEditorForm categories={categories} />
+      <main className="min-h-screen bg-[#fbfaf7]">
+        <Suspense fallback={<div className="p-8 text-center text-sm text-[#64645c]">加载中...</div>}>
+          <ArticleEditorForm categories={categories} />
+        </Suspense>
       </main>
     </>
   );

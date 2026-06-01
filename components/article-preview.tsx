@@ -1,4 +1,4 @@
-import { CalendarDays, Clock3, Quote, Star } from "lucide-react";
+import { CalendarDays, Clock3, Quote } from "lucide-react";
 import { MarkdownText } from "@/components/markdown-text";
 import type { ArticleFontFamily, ArticleFontSize } from "@/lib/content";
 
@@ -15,6 +15,8 @@ type ArticlePreviewProps = {
     date: string;
     readingTime: string;
     tags: string[];
+    contentMd?: string;
+    coverImage?: string;
     sections: Section[];
     fontFamily?: ArticleFontFamily;
     fontSize?: ArticleFontSize;
@@ -44,56 +46,69 @@ export function ArticlePreview({ article }: ArticlePreviewProps) {
   return (
     <div className={`pointer-events-none select-none ${fontClass} ${sizeClass}`}>
       {/* Article header */}
-      <header className="neo-noise border-b-4 border-black bg-neo-secondary px-5 py-8">
-        <div className="mb-3 inline-flex border-4 border-black bg-neo-accent px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] shadow-[3px_3px_0_0_#000]">
+      <header className="bg-surface-warm px-5 py-8">
+        <div className="mb-3 inline-flex rounded-full bg-olive/10 px-3 py-1 text-[10px] font-medium text-olive">
           预览模式
         </div>
-        <h1 className="text-3xl font-black uppercase leading-none tracking-[0] sm:text-4xl lg:text-5xl">
+        <h1
+          className="text-[28px] leading-tight text-ink sm:text-[36px]"
+          style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}
+        >
           {article.title || "文章标题"}
         </h1>
-        <p className="mt-4 border-4 border-black bg-white p-3 text-sm font-bold leading-snug shadow-[5px_5px_0_0_#000]">
+        <p className="mt-4 text-[14px] leading-relaxed text-muted">
           {article.excerpt || "文章摘要会显示在这里"}
         </p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <span className="inline-flex items-center gap-1 border-4 border-black bg-black px-3 py-1 text-xs font-black uppercase tracking-[0.14em] text-white">
-            <CalendarDays aria-hidden="true" className="h-3 w-3 stroke-[4]" />
+        <div className="mt-4 flex flex-wrap gap-3 text-[11px] text-faint">
+          <span className="inline-flex items-center gap-1">
+            <CalendarDays aria-hidden="true" className="h-3.5 w-3.5" />
             {article.date || "2026-01-01"}
           </span>
-          <span className="inline-flex items-center gap-1 border-4 border-black bg-neo-muted px-3 py-1 text-xs font-black uppercase tracking-[0.14em]">
-            <Clock3 aria-hidden="true" className="h-3 w-3 stroke-[4]" />
+          <span className="inline-flex items-center gap-1">
+            <Clock3 aria-hidden="true" className="h-3.5 w-3.5" />
             {article.readingTime || "5 min read"}
           </span>
         </div>
       </header>
 
-      {/* Tags marquee */}
+      {/* Tags */}
       {article.tags.length > 0 && (
-        <div className="overflow-hidden border-y-4 border-black bg-black py-2 text-white">
-          <div className="flex w-max items-center gap-4 whitespace-nowrap px-4 text-xs font-black uppercase tracking-[0.16em]">
-            {[...article.tags, ...article.tags, ...article.tags].map((tag, i) => (
-              <span className="flex items-center gap-4" key={`${tag}-${i}`}>
+        <div className="border-y border-line bg-surface py-2">
+          <div className="flex flex-wrap items-center gap-2 px-5">
+            {article.tags.map((tag) => (
+              <span
+                key={tag}
+                className="inline-flex items-center rounded-full bg-olive/10 px-2.5 py-0.5 text-[10px] font-medium text-olive"
+              >
                 {tag}
-                <Star aria-hidden="true" className="h-4 w-4 fill-current stroke-[4]" />
               </span>
             ))}
           </div>
         </div>
       )}
 
+      {/* Cover image preview */}
+      {article.coverImage && (
+        <div className="px-4 py-4">
+          <div className="mx-auto max-w-4xl overflow-hidden rounded-[8px]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={article.coverImage} alt="封面预览" className="h-48 w-full object-cover" />
+          </div>
+        </div>
+      )}
+
       {/* Content area */}
-      <div className="bg-neo-bg px-4 py-8">
+      <div className="bg-canvas px-4 py-8">
         <div className="grid gap-6 lg:grid-cols-[160px_1fr]">
           {/* Sidebar */}
           <aside>
             {article.tags.length > 0 && (
-              <div className="border-4 border-black bg-white p-3 shadow-[5px_5px_0_0_#000]">
-                <p className="mb-2 text-xs font-black uppercase tracking-[0.18em]">标签</p>
+              <div className="rounded-[10px] border border-line bg-surface p-4">
+                <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-faint">标签</p>
                 <div className="flex flex-wrap gap-2">
-                  {article.tags.map((tag, index) => (
+                  {article.tags.map((tag) => (
                     <span
-                      className={`inline-flex border-4 border-black px-2 py-1 text-[10px] font-black uppercase tracking-[0.18em] shadow-[3px_3px_0_0_#000] transition duration-200 ease-out ${
-                        index % 2 === 0 ? "bg-neo-secondary" : "bg-neo-muted"
-                      }`}
+                      className="inline-flex items-center rounded-full bg-surface-warm px-2.5 py-0.5 text-[10px] font-medium text-muted"
                       key={tag}
                     >
                       {tag}
@@ -104,42 +119,48 @@ export function ArticlePreview({ article }: ArticlePreviewProps) {
             )}
           </aside>
 
-          {/* Sections */}
+          {/* Content: markdown or sections */}
           <div className="grid gap-6">
-            {article.sections.length === 0 ? (
-              <div className="border-4 border-dashed border-black bg-white p-6 text-center">
-                <p className="text-lg font-black">暂无章节内容</p>
-                <p className="mt-2 text-sm font-bold">在左侧表单中添加章节后，预览会实时更新</p>
+            {article.contentMd ? (
+              <section className="rounded-[10px] border border-line bg-surface p-5">
+                <MarkdownText content={article.contentMd} className="text-[13px] leading-relaxed" />
+              </section>
+            ) : article.sections.length === 0 ? (
+              <div className="rounded-[10px] border border-dashed border-line bg-surface p-6 text-center">
+                <p
+                  className="text-[18px] text-ink"
+                  style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}
+                >
+                  暂无章节内容
+                </p>
+                <p className="mt-2 text-[13px] text-muted">在左侧表单中添加章节后，预览会实时更新</p>
               </div>
             ) : (
               article.sections.map((section, index) => (
-                <section className="border-4 border-black bg-white shadow-[7px_7px_0_0_#000]" key={index}>
-                  <div className={index % 2 === 0 ? "border-b-4 border-black bg-neo-muted p-4" : "border-b-4 border-black bg-neo-accent p-4"}>
-                    <div className="mb-2 flex items-center gap-2">
-                      <span className="grid h-8 w-8 place-items-center border-4 border-black bg-white text-sm font-black shadow-[3px_3px_0_0_#000]">
-                        {String(index + 1).padStart(2, "0")}
-                      </span>
-                      <Star aria-hidden="true" className="h-5 w-5 fill-black stroke-[4]" />
-                    </div>
-                    <h2 className="text-xl font-black uppercase leading-none tracking-[0] sm:text-2xl">
+                <section className="rounded-[10px] border border-line bg-surface" key={index}>
+                  <div className="border-b border-line bg-surface-warm p-4">
+                    <p
+                      className="text-[20px] leading-tight text-ink"
+                      style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}
+                    >
                       {section.heading || `章节 ${index + 1}`}
-                    </h2>
+                    </p>
                   </div>
                   <div className="grid gap-3 p-4 sm:p-5">
                     {section.body.filter((p) => p.trim()).length === 0 ? (
-                      <p className="text-sm font-bold italic opacity-50">章节正文会显示在这里</p>
+                      <p className="text-[13px] italic text-faint">章节正文会显示在这里</p>
                     ) : (
                       section.body.filter((p) => p.trim()).map((paragraph, pi) => (
                         <MarkdownText
                           content={paragraph}
-                          className="text-sm font-bold leading-relaxed"
+                          className="text-[13px] leading-relaxed"
                           key={pi}
                         />
                       ))
                     )}
                     {section.callout ? (
-                      <blockquote className="mt-1 rotate-[-1deg] border-4 border-black bg-neo-secondary p-3 text-sm font-black leading-snug shadow-[5px_5px_0_0_#000]">
-                        <Quote aria-hidden="true" className="mb-2 h-5 w-5 fill-black stroke-[4]" />
+                      <blockquote className="mt-1 border-l-3 border-olive py-2 pl-4 text-[13px] italic text-muted">
+                        <Quote aria-hidden="true" className="mb-1 h-4 w-4 text-olive" />
                         {section.callout}
                       </blockquote>
                     ) : null}
@@ -149,9 +170,12 @@ export function ArticlePreview({ article }: ArticlePreviewProps) {
             )}
 
             {/* Bottom CTA preview */}
-            <section className="border-4 border-black bg-black p-4 text-white shadow-[7px_7px_0_0_#000] sm:p-5">
-              <p className="text-xs font-black uppercase tracking-[0.18em]">下一声回响</p>
-              <h2 className="mt-2 text-2xl font-black uppercase leading-none tracking-[0] sm:text-3xl">
+            <section className="rounded-[10px] bg-surface-warm p-5">
+              <p className="text-[11px] font-medium uppercase tracking-wider text-olive">下一声回响</p>
+              <h2
+                className="mt-2 text-[22px] leading-tight text-ink"
+                style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}
+              >
                 把方法变成自己的工作流。
               </h2>
             </section>

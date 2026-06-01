@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ArticleEditorForm } from "@/components/studio/article-editor-form";
@@ -27,13 +28,15 @@ export default async function StudioArticlePage({ params }: StudioArticlePagePro
   return (
     <>
       <StudioHeader />
-      <main className="min-h-screen bg-neo-bg">
-        <ArticleEditorForm
-          articleId={article.id}
-          status={article.status}
-          initial={rowToDraftInput(article)}
-          categories={categories}
-        />
+      <main className="min-h-screen bg-[#fbfaf7]">
+        <Suspense fallback={<div className="p-8 text-center text-sm text-[#64645c]">加载中...</div>}>
+          <ArticleEditorForm
+            articleId={article.id}
+            status={article.status}
+            initial={rowToDraftInput(article)}
+            categories={categories}
+          />
+        </Suspense>
       </main>
     </>
   );

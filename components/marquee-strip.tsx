@@ -1,27 +1,22 @@
-import { Star } from "lucide-react";
-
-type MarqueeStripProps = {
+type TagListProps = {
   items: string[];
-  tone?: "yellow" | "black";
+  tone?: "olive" | "default";
 };
 
-export function MarqueeStrip({ items, tone = "yellow" }: MarqueeStripProps) {
-  const repeated = [...items, ...items, ...items];
-
+export function MarqueeStrip({ items, tone = "default" }: TagListProps) {
   return (
-    <div
-      className={
-        tone === "black"
-          ? "overflow-hidden border-y-4 border-black bg-black py-3 text-white"
-          : "overflow-hidden border-y-4 border-black bg-neo-secondary py-3 text-black"
-      }
-      aria-label={items.join(", ")}
-    >
-      <div className="flex w-max animate-[marquee_24s_linear_infinite] items-center gap-6 whitespace-nowrap px-6 text-xl font-black uppercase tracking-[0.16em]">
-        {repeated.map((item, index) => (
-          <span className="flex items-center gap-6" key={`${item}-${index}`}>
+    <div className="border-y border-line bg-surface py-3">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-6 lg:px-8">
+        {items.map((item) => (
+          <span
+            key={item}
+            className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium ${
+              tone === "olive"
+                ? "bg-olive/10 text-olive"
+                : "bg-surface-warm text-muted"
+            }`}
+          >
             {item}
-            <Star aria-hidden="true" className="h-6 w-6 fill-current stroke-[4]" />
           </span>
         ))}
       </div>

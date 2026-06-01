@@ -39,13 +39,13 @@ npm run build
 
 Manual smoke checks:
 
-- `/` loads and shows the Echo Space hero with navigation links (关于, 作品, 文章, 阅读, 写作) and clickable category tags.
+- `/` loads and shows the Echo Space hero with navigation links (关于, 作品, 文章, 阅读, 写作, 管理) and clickable category tags.
 - `/articles` loads and shows the article list with featured hero card and article grid.
 - `/articles?tag={category}` filters the list to published articles containing that category and includes a "查看全部文章" link.
 - `/editor` redirects to `/studio/articles/new`.
 - `/studio/login` accepts admin email + password login. Magic link is also available as fallback.
 - A non-admin email is rejected by `/api/auth/login` and `/api/auth/magic-link`.
-- `/studio/articles` requires auth and lists drafts, published articles, and archived records. Category filtering (`tag`) and title search (`q`) can be combined. Each row shows an edit link and a permanent delete button with confirmation.
+- `/studio/articles` requires auth and lists drafts, published articles, and archived records. Category filtering (`tag`) and title search (`q`) can be combined, for example `/studio/articles?tag=AI&q=Hermes`. Each row shows an edit link, category tags, and a permanent delete button with confirmation.
 - `/studio/categories` requires auth, creates categories, edits descriptions/sort order, and rejects deletion while a category is used by any article.
 - `/studio/articles/new` saves a draft through `/api/admin/articles`. The preview panel can be toggled with the 显示预览/隐藏预览 button.
 - `/studio/articles/[id]` edits slug, source info, category selections, sections, and provides a permanent delete button at the bottom.
@@ -56,6 +56,7 @@ Manual smoke checks:
 - `/content/echo-space` redirects to the current featured article.
 - The "全部文章" link in the footer navigates to `/articles`.
 - The "写作" button in the header navigates to `/studio/articles/new`.
+- The "管理" button in the header navigates to `/studio/articles` and requires admin login.
 - Mobile width keeps CTA buttons and article text readable without overlap.
 
 ## Common Tasks
@@ -176,11 +177,24 @@ If publish fails, check the article has `slug`, `title`, `excerpt`, `highlight`,
 
 If a category cannot be deleted, check `/studio/articles` for drafts, published articles, or archived records still using that category.
 
+If the admin article list seems incomplete, clear `/studio/articles` query params first, then re-apply `tag` and `q` filters separately to isolate the filter.
+
 If a changed slug still serves stale content, confirm mutation routes are calling `revalidateTag` and that the old slug was saved before the patch.
 
 If Tailwind utility color classes like `text-white` appear to have no effect on `a` elements, check that `globals.css` does not define `a { color: ... }` outside a `@layer` block. Non-layered CSS rules override all `@layer utilities` rules. The fix is to move the rule into `@layer base`.
 
 ## Known State
+
+On 2026-05-07:
+
+- Latest pushed commit on `main`: `7ea1168 Add category management and admin filters`.
+- `npm run lint` passed.
+- `npm run build` passed after allowing Turbopack/PostCSS to bind a local process port outside the sandbox.
+- Homepage is a clearer personal work index with category links, curated work entries, latest article, GitHub, and email contact.
+- Category management is implemented in code: `categories` table schema, `/studio/categories`, `/api/admin/categories`, and category multi-selects in the article editor.
+- Public category filtering is implemented at `/articles?tag=<category>`.
+- Admin article filtering is implemented at `/studio/articles?tag=<category>&q=<title>`.
+- Database follow-up: run the updated `supabase/schema.sql` and `npm run seed:articles` in environments where `categories` has not yet been created.
 
 On 2026-05-02:
 

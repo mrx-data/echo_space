@@ -38,12 +38,12 @@ export function DeleteArticleButton({ articleId }: { articleId: string }) {
       type="button"
       onClick={handleDelete}
       disabled={deleting}
-      className="inline-flex w-fit items-center gap-2 border-4 border-black bg-neo-accent px-4 py-2 text-sm font-black uppercase tracking-[0.14em] shadow-[4px_4px_0_0_#000] disabled:opacity-60"
+      className="inline-flex w-fit items-center gap-1.5 rounded-full border border-[#e8e4db] bg-white px-3 py-1.5 text-xs text-[#9a988f] transition hover:border-red-300 hover:text-red-600 disabled:opacity-50"
     >
       {deleting ? (
-        <Loader2 className="h-4 w-4 animate-spin stroke-[4]" />
+        <Loader2 className="h-3 w-3 animate-spin" />
       ) : (
-        <Trash2 className="h-4 w-4 stroke-[4]" />
+        <Trash2 className="h-3 w-3" />
       )}
       删除
     </button>

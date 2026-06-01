@@ -39,15 +39,15 @@ export function AuthCallback() {
   }, []);
 
   return (
-    <div className="grid max-w-xl gap-5 border-4 border-black bg-white p-6 shadow-[10px_10px_0_0_#000]">
-      <div className="inline-flex items-center gap-3 text-xl font-black">
-        {!failed ? <Loader2 aria-hidden="true" className="h-6 w-6 animate-spin stroke-[4]" /> : null}
+    <div className="editorial-card grid max-w-md gap-5 p-8 text-center">
+      <div className="inline-flex items-center justify-center gap-3 text-lg text-[#171713]">
+        {!failed ? <Loader2 aria-hidden="true" className="h-5 w-5 animate-spin text-[#596044]" /> : null}
         {message}
       </div>
       {failed ? (
         <Link
           href="/studio/login"
-          className="inline-flex w-fit border-4 border-black bg-neo-secondary px-5 py-3 text-sm font-black uppercase tracking-[0.14em] shadow-[5px_5px_0_0_#000]"
+          className="inline-flex w-fit items-center justify-center rounded-full bg-[#485035] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-[#596044] mx-auto"
         >
           重新登录
         </Link>

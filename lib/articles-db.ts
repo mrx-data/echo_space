@@ -20,6 +20,8 @@ export type ArticleRow = {
   source_title: string | null;
   source_author: string | null;
   source_url: string | null;
+  content_md: string | null;
+  cover_image: string | null;
   sections: ArticleSection[];
   font_family: ArticleFontFamily | null;
   font_size: ArticleFontSize | null;
@@ -58,14 +60,22 @@ export type ArticleDraftInput = {
     author?: string;
     url?: string;
   };
+  contentMd?: string;
+  coverImage?: string;
   sections?: ArticleSection[];
 };
 
 const articleSelectFull =
-  "id,slug,title,excerpt,highlight,reading_time,date,status,tags,source_title,source_author,source_url,sections,font_family,font_size,created_at,updated_at,published_at,author_user_id";
+  "id,slug,title,excerpt,highlight,reading_time,date,status,tags,source_title,source_author,source_url,content_md,cover_image,sections,font_family,font_size,created_at,updated_at,published_at,author_user_id";
 
 const articleSelectLegacy =
   "id,slug,title,excerpt,highlight,reading_time,date,status,tags,source_title,source_author,source_url,sections,created_at,updated_at,published_at,author_user_id";
+
+const articleSelectNoContentMd =
+  "id,slug,title,excerpt,highlight,reading_time,date,status,tags,source_title,source_author,source_url,cover_image,sections,font_family,font_size,created_at,updated_at,published_at,author_user_id";
+
+const articleSelectNoCoverImage =
+  "id,slug,title,excerpt,highlight,reading_time,date,status,tags,source_title,source_author,source_url,content_md,sections,font_family,font_size,created_at,updated_at,published_at,author_user_id";
 
 async function fetchArticles<T>(query: string, options?: { tags?: string[]; noStore?: boolean }): Promise<T> {
   try {
@@ -73,6 +83,18 @@ async function fetchArticles<T>(query: string, options?: { tags?: string[]; noSt
   } catch (error) {
     if (error instanceof Error && error.message.includes("font_family")) {
       const fallbackQuery = query.replace(articleSelectFull, articleSelectLegacy);
+      if (fallbackQuery !== query) {
+        return await supabaseRestFetch<T>(fallbackQuery, options);
+      }
+    }
+    if (error instanceof Error && error.message.includes("content_md")) {
+      const fallbackQuery = query.replace(articleSelectFull, articleSelectNoContentMd);
+      if (fallbackQuery !== query) {
+        return await supabaseRestFetch<T>(fallbackQuery, options);
+      }
+    }
+    if (error instanceof Error && error.message.includes("cover_image")) {
+      const fallbackQuery = query.replace(articleSelectFull, articleSelectNoCoverImage);
       if (fallbackQuery !== query) {
         return await supabaseRestFetch<T>(fallbackQuery, options);
       }
@@ -159,6 +181,8 @@ export function rowToArticle(row: ArticleRow): Article {
       author: row.source_author ?? "",
       url: row.source_url ?? "",
     },
+    contentMd: row.content_md ?? undefined,
+    coverImage: row.cover_image ?? undefined,
     sections: row.sections ?? [],
   };
 }
@@ -179,6 +203,8 @@ export function rowToDraftInput(row: ArticleRow): Required<ArticleDraftInput> {
       author: row.source_author ?? "",
       url: row.source_url ?? "",
     },
+    contentMd: row.content_md ?? "",
+    coverImage: row.cover_image ?? "",
     sections: row.sections ?? [],
   };
 }
@@ -200,6 +226,8 @@ export function sanitizeArticleInput(input: ArticleDraftInput) {
     source_title: input.source?.title?.trim() || null,
     source_author: input.source?.author?.trim() || null,
     source_url: input.source?.url?.trim() || null,
+    content_md: input.contentMd?.trim() || null,
+    cover_image: input.coverImage?.trim() || null,
     sections: sanitizeSections(input.sections ?? []),
   };
 }
@@ -220,9 +248,9 @@ export function validatePublishInput(input: ArticleDraftInput): string[] {
 
   if (!sanitized.slug) errors.push("slug");
   if (!sanitized.title) errors.push("title");
-  if (!sanitized.excerpt) errors.push("excerpt");
-  if (!sanitized.highlight) errors.push("highlight");
-  if (!sanitized.sections.some((section) => section.heading && section.body.length > 0)) {
+  if (!sanitized.excerpt && !sanitized.content_md) errors.push("excerpt");
+  if (!sanitized.highlight && !sanitized.content_md) errors.push("highlight");
+  if (!sanitized.content_md && !sanitized.sections.some((section) => section.heading && section.body.length > 0)) {
     errors.push("sections");
   }
 
@@ -426,6 +454,7 @@ export async function publishArticle(id: string) {
       author: existing.source_author ?? "",
       url: existing.source_url ?? "",
     },
+    contentMd: existing.content_md ?? undefined,
     sections: existing.sections,
   });
 

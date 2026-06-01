@@ -10,8 +10,8 @@ Echo Space is a personal site built with the Next.js App Router and a Supabase-b
 - Server Components and Route Handlers query Supabase.
 - The browser never writes directly to the `articles` or `categories` tables.
 - Vercel hosts the app runtime; Supabase owns durable content and auth state.
-- Public pages: `/`, `/articles`, `/content/[slug]`, `/content/echo-space`. The homepage is a curated personal work index backed by the latest published article query, backend-managed category links, and static links to existing public content.
-- Admin pages: `/studio`, `/studio/login`, `/studio/articles`, `/studio/articles/new`, `/studio/articles/[id]`, `/studio/categories`.
+- Public pages: `/`, `/articles`, `/articles?tag=<category>`, `/content/[slug]`, `/content/echo-space`. The homepage is a curated personal work index backed by the latest published article query, backend-managed category links, and static links to existing public content.
+- Admin pages: `/studio`, `/studio/login`, `/studio/articles`, `/studio/articles?tag=<category>&q=<title>`, `/studio/articles/new`, `/studio/articles/[id]`, `/studio/categories`.
 - Compatibility route: `/editor` redirects to `/studio/articles/new`.
 - Admin APIs: `/api/admin/articles/*`, `/api/admin/categories/*`.
 - Auth APIs: `/api/auth/login`, `/api/auth/magic-link`, `/api/auth/session`, `/api/auth/logout`.
@@ -62,6 +62,8 @@ The Studio editor is a client component that:
 3. Saves drafts through `POST /api/admin/articles` or `PATCH /api/admin/articles/[id]`.
 4. Publishes, unpublishes, and archives through explicit admin endpoints.
 5. Permanently deletes articles through `DELETE /api/admin/articles/[id]?permanent=true` with a browser confirmation dialog. The list page (`/studio/articles`) also has a per-row delete button using `DeleteArticleButton`.
+
+`/studio/articles` is the admin article index. It uses `listAdminArticles()` and filters in the Server Component by category (`tag`) and title keyword (`q`) so drafts, published, and archived records can be searched without adding extra Supabase query paths.
 
 `/studio/categories` manages category names, descriptions, and sort order. Category names cannot be renamed in v1; create a new category and switch articles over when renaming is needed. Deleting a category is rejected while any article still references it in `articles.tags`.
 
@@ -116,16 +118,17 @@ Core reusable components:
 
 ```text
 /                    app/page.tsx                  (static)
-/articles            app/articles/page.tsx         (static)
+/articles            app/articles/page.tsx         (static, supports ?tag=)
 /editor              app/editor/page.tsx                         (redirect)
 /studio              app/studio/page.tsx                         (redirect)
 /studio/login        app/studio/login/page.tsx                   (public login)
-/studio/articles     app/studio/articles/page.tsx                (admin)
+/studio/articles     app/studio/articles/page.tsx                (admin, supports ?tag=&q=)
 /studio/articles/new app/studio/articles/new/page.tsx            (admin)
 /studio/articles/[id] app/studio/articles/[id]/page.tsx          (admin)
 /studio/categories   app/studio/categories/page.tsx              (admin)
 /api/admin/articles  app/api/admin/articles/route.ts             (admin API)
 /api/admin/categories app/api/admin/categories/route.ts           (admin API)
+/api/admin/categories/[name] app/api/admin/categories/[name]/route.ts (admin API)
 /api/auth/*          app/api/auth/*                              (auth API: login, magic-link, session, logout)
 /api/articles        app/api/articles/route.ts                   (410 compatibility)
 /content/[slug]      app/content/[slug]/page.tsx                 (published content)

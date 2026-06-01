@@ -16,9 +16,9 @@ export function LogoutButton() {
     <button
       type="button"
       onClick={logout}
-      className="inline-flex min-h-12 items-center gap-2 border-4 border-black bg-white px-4 py-2 text-sm font-black uppercase tracking-[0.14em] shadow-[5px_5px_0_0_#000] transition duration-100 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+      className="inline-flex items-center gap-1.5 rounded-full border border-[#e8e4db] bg-white px-4 py-2 text-sm text-[#64645c] transition hover:border-[#171713] hover:text-[#171713]"
     >
-      <LogOut aria-hidden="true" className="h-4 w-4 stroke-[4]" />
+      <LogOut aria-hidden="true" className="h-3.5 w-3.5" />
       退出
     </button>
   );
