@@ -10,10 +10,10 @@ Echo Space is a personal site built with the Next.js App Router and a Supabase-b
 - Server Components and Route Handlers query Supabase.
 - The browser never writes directly to the `articles` or `categories` tables.
 - Vercel hosts the app runtime; Supabase owns durable content and auth state.
-- Public pages: `/`, `/articles`, `/articles?tag=<category>`, `/content/[slug]`, `/content/echo-space`. The homepage is a curated personal work index backed by the latest published article query, backend-managed category links, and static links to existing public content.
+- Public pages: `/`, `/articles`, `/articles?tag=<category>`, `/content/[slug]`, `/content/echo-space`. The homepage is an editorial personal work index backed by backend-managed category links, static image assets, contact links, and the latest published article query where needed.
 - Admin pages: `/studio`, `/studio/login`, `/studio/articles`, `/studio/articles?tag=<category>&q=<title>`, `/studio/articles/new`, `/studio/articles/[id]`, `/studio/categories`.
 - Compatibility route: `/editor` redirects to `/studio/articles/new`.
-- Admin APIs: `/api/admin/articles/*`, `/api/admin/categories/*`.
+- Admin APIs: `/api/admin/articles/*`, `/api/admin/categories/*`, `/api/admin/upload`.
 - Auth APIs: `/api/auth/login`, `/api/auth/magic-link`, `/api/auth/session`, `/api/auth/logout`.
 - All public content reads are server-side. Admin writes use server-side Supabase service credentials.
 - If Supabase env vars are missing, public pages fall back to `lib/content.ts` fixtures so local build verification remains possible.
@@ -30,7 +30,11 @@ Article fields:
 - `status` checked against `draft`, `published`, `archived`
 - `tags text[]`
 - `source_title`, `source_author`, `source_url`
+- `content_md` for Markdown-mode article bodies
+- `cover_image` for uploaded or predefined cover URLs
 - `sections jsonb`, shaped as `{ heading, body[], callout? }[]`
+- `font_family` checked against `sans`, `serif`, `mono`
+- `font_size` checked against `sm`, `base`, `lg`
 - timestamps and `author_user_id`
 
 Category fields:
@@ -40,7 +44,7 @@ Category fields:
 - `sort_order integer`
 - timestamps
 
-`articles.tags` stores selected category names so existing article render shapes remain compatible. `lib/articles-db.ts` maps Supabase rows to the existing article render shape and exposes category CRUD helpers. `lib/content.ts` remains as fixtures for migration and build fallback.
+`articles.tags` stores selected category names so existing article render shapes remain compatible. `lib/articles-db.ts` maps Supabase rows to the existing article render shape, supports fallback selects for older Supabase schemas that are missing newer article columns, and exposes category CRUD helpers. `lib/content.ts` remains as fixtures for migration and build fallback.
 
 ## Auth And Admin Guard
 
@@ -58,10 +62,13 @@ Supabase Auth supports password login (primary) and email magic link (fallback).
 The Studio editor is a client component that:
 
 1. Renders metadata, source fields, backend-managed category multi-selects, and dynamic section editing.
-2. Shows a collapsible live preview panel using `ArticlePreview`; the toggle button lets the user show or hide the preview.
-3. Saves drafts through `POST /api/admin/articles` or `PATCH /api/admin/articles/[id]`.
-4. Publishes, unpublishes, and archives through explicit admin endpoints.
-5. Permanently deletes articles through `DELETE /api/admin/articles/[id]?permanent=true` with a browser confirmation dialog. The list page (`/studio/articles`) also has a per-row delete button using `DeleteArticleButton`.
+2. Supports structured section editing and Markdown-mode body editing through `content_md`.
+3. Supports predefined SVG covers from `public/covers/` and custom image upload through `POST /api/admin/upload`, which validates image MIME type, enforces a 5MB limit, writes to `public/uploads/`, and returns a `/uploads/...` URL for `cover_image`.
+4. Stores article font controls in `font_family` and `font_size`; renderers map those values to `.article-font-*` and `.article-text-*` classes.
+5. Shows a collapsible, draggable live preview panel using `ArticlePreview`; the toggle button lets the user show or hide the preview.
+6. Saves drafts through `POST /api/admin/articles` or `PATCH /api/admin/articles/[id]`.
+7. Publishes, unpublishes, and archives through explicit admin endpoints.
+8. Permanently deletes articles through `DELETE /api/admin/articles/[id]?permanent=true` with a browser confirmation dialog. The list page (`/studio/articles`) also has a per-row delete button using `DeleteArticleButton`.
 
 `/studio/articles` is the admin article index. It uses `listAdminArticles()` and filters in the Server Component by category (`tag`) and title keyword (`q`) so drafts, published, and archived records can be searched without adding extra Supabase query paths.
 
@@ -88,27 +95,33 @@ The `SUPABASE_SERVICE_ROLE_KEY` is only used from server-side Route Handlers and
 
 ## Cutover State
 
-As of 2026-05-02, the Supabase project had the `articles` table from `supabase/schema.sql`, and the one-time seed imported the fixture articles `horizontal-vertical-ai-research` and `hermes-weixin`. The current schema also includes `categories`; rerun the SQL and seed script to upsert fixture tags as categories.
+As of 2026-05-02, the Supabase project had the `articles` table from `supabase/schema.sql`, and the one-time seed imported the fixture articles `horizontal-vertical-ai-research` and `hermes-weixin`. The current schema also includes `categories`, `content_md`, `cover_image`, `font_family`, and `font_size`; rerun the SQL, apply relevant files in `supabase/migrations/` to older environments, and run the seed script to upsert fixture tags as categories.
 
 ## UI System
 
-The design system is centralized in `app/globals.css` and component primitives in `components/`.
+The design system is centralized in `app/globals.css` and component primitives in `components/`. The current UI is editorial and portfolio-like, with cream surfaces, olive accents, thin warm-gray borders, soft shadows, rounded 10px cards, and serif display typography.
 
 Core tokens:
 
-- `--neo-bg: #FFFDF5`
-- `--neo-ink: #000000`
-- `--neo-accent: #FF6B6B`
-- `--neo-secondary: #FFD93D`
-- `--neo-muted: #C4B5FD`
+- `--canvas: #fbfaf7`
+- `--surface: #ffffff`
+- `--surface-warm: #f7f5f0`
+- `--ink: #171713`
+- `--muted: #64645c`
+- `--faint: #9a988f`
+- `--line: #e8e4db`
+- `--olive: #596044`
+- `--olive-dark: #485035`
+- `--font-display: "Cormorant Garamond", Georgia, serif`
+- `--font-body: "Inter", "Avenir Next", "Helvetica Neue", Arial, sans-serif`
 
 Core reusable components:
 
-- `NeoButton` — link-styled button with variants (accent, secondary, white, black).
-- `NeoCard` — bordered card with hard shadow.
-- `StickerBadge` — rotated label tag.
-- `MarqueeStrip` — scrolling ticker strip.
-- `SiteHeader` — sticky top nav with logo, navigation links, and editor CTA.
+- `NeoButton` — link-styled rounded button with olive, outline, ghost, and white variants.
+- `NeoCard` — bordered editorial card with soft shadow.
+- `StickerBadge` — legacy rotated label tag.
+- `MarqueeStrip` — legacy scrolling ticker strip.
+- `SiteHeader` — sticky top nav with Echo Space logo, 首页/文章/关于 links, and mail CTA.
 - `SiteFooter` — bottom section with "全部文章" link.
 - `ArticleList` — featured hero card + grid of article cards.
 - `ArticlePage` — full article detail view.
@@ -129,7 +142,9 @@ Core reusable components:
 /api/admin/articles  app/api/admin/articles/route.ts             (admin API)
 /api/admin/categories app/api/admin/categories/route.ts           (admin API)
 /api/admin/categories/[name] app/api/admin/categories/[name]/route.ts (admin API)
+/api/admin/upload    app/api/admin/upload/route.ts               (admin image upload API)
 /api/auth/*          app/api/auth/*                              (auth API: login, magic-link, session, logout)
+/studio/auth/callback app/studio/auth/callback/page.tsx          (magic-link callback)
 /api/articles        app/api/articles/route.ts                   (410 compatibility)
 /content/[slug]      app/content/[slug]/page.tsx                 (published content)
 /content/echo-space  app/content/echo-space/page.tsx             (legacy redirect)
@@ -137,7 +152,7 @@ Core reusable components:
 
 ## Build And Font Behavior
 
-`app/globals.css` defines a CSS font stack that prefers Space Grotesk and falls back to system sans fonts. The project avoids `next/font/google` so `npm run build` does not need network access to Google Fonts.
+`app/globals.css` imports Cormorant Garamond and Inter from Google Fonts via CSS `@import`, then exposes them as `--font-display` and `--font-body`. The project does not use `next/font/google`.
 
 `npm run dev` uses webpack dev mode.
 

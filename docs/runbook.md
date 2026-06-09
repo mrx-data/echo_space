@@ -39,24 +39,25 @@ npm run build
 
 Manual smoke checks:
 
-- `/` loads and shows the Echo Space hero with navigation links (关于, 作品, 文章, 阅读, 写作, 管理) and clickable category tags.
+- `/` loads the editorial Echo Space homepage with 首页, 文章, 关于, and Let's connect in the header; category tags link to filtered article lists.
 - `/articles` loads and shows the article list with featured hero card and article grid.
 - `/articles?tag={category}` filters the list to published articles containing that category and includes a "查看全部文章" link.
 - `/editor` redirects to `/studio/articles/new`.
 - `/studio/login` accepts admin email + password login. Magic link is also available as fallback.
+- `/studio/auth/callback` accepts Supabase magic-link tokens and stores the session through `/api/auth/session`.
 - A non-admin email is rejected by `/api/auth/login` and `/api/auth/magic-link`.
 - `/studio/articles` requires auth and lists drafts, published articles, and archived records. Category filtering (`tag`) and title search (`q`) can be combined, for example `/studio/articles?tag=AI&q=Hermes`. Each row shows an edit link, category tags, and a permanent delete button with confirmation.
 - `/studio/categories` requires auth, creates categories, edits descriptions/sort order, and rejects deletion while a category is used by any article.
-- `/studio/articles/new` saves a draft through `/api/admin/articles`. The preview panel can be toggled with the 显示预览/隐藏预览 button.
-- `/studio/articles/[id]` edits slug, source info, category selections, sections, and provides a permanent delete button at the bottom.
+- `/studio/articles/new` saves a draft through `/api/admin/articles`. The preview panel can be toggled with the 显示预览/隐藏预览 button and resized by dragging the split handle.
+- `/studio/articles/[id]` edits slug, source info, category selections, font family, font size, Markdown content, structured sections, and cover image.
+- Cover upload accepts image files under 5MB through `/api/admin/upload`, stores them under `public/uploads/`, and uses the returned `/uploads/...` URL in the preview.
 - Publishing makes the article visible on `/`, `/articles`, and `/content/[slug]`.
 - Unpublishing removes the article from public pages.
 - Archiving removes the article from public pages and keeps it in Studio as `archived`.
 - Clicking an article card navigates to `/content/{slug}` and shows the full article.
 - `/content/echo-space` redirects to the current featured article.
 - The "全部文章" link in the footer navigates to `/articles`.
-- The "写作" button in the header navigates to `/studio/articles/new`.
-- The "管理" button in the header navigates to `/studio/articles` and requires admin login.
+- Direct navigation to `/studio/articles/new` and `/studio/articles` requires admin login.
 - Mobile width keeps CTA buttons and article text readable without overlap.
 
 ## Common Tasks
@@ -84,6 +85,12 @@ npm run seed:articles
 
 The seed script imports fixture articles and upserts their `tags` as categories.
 
+Apply schema migrations to older Supabase environments:
+
+```text
+Run `supabase/schema.sql` for a fresh setup. For existing environments, apply any missing files in `supabase/migrations/`, such as `002_add_font_columns.sql`, before relying on newer editor fields.
+```
+
 Deploy through Vercel:
 
 ```text
@@ -104,8 +111,10 @@ Add a new article:
 3. Open /studio/categories and create any needed categories
 4. Open /studio/articles/new
 5. Select one or more categories
-6. Save draft
-7. Publish when required fields are complete
+6. Choose a cover image, article font family, and article font size if needed
+7. Write the body in Markdown mode or structured section mode
+8. Save draft
+9. Publish when required fields are complete
 ```
 
 Change article content:
@@ -179,11 +188,24 @@ If a category cannot be deleted, check `/studio/articles` for drafts, published 
 
 If the admin article list seems incomplete, clear `/studio/articles` query params first, then re-apply `tag` and `q` filters separately to isolate the filter.
 
+If cover upload fails, confirm the user is authenticated as admin, the file MIME type starts with `image/`, the file is 5MB or smaller, and the runtime can write to `public/uploads/`. This local filesystem upload path is suitable for local/dev use; production persistence depends on the deployment filesystem behavior.
+
+If Markdown articles render without the latest body, confirm the environment has the `content_md` column and that `lib/articles-db.ts` is selecting the full article field list.
+
+If article font controls do not persist, confirm the environment has `font_family` and `font_size` columns or that `supabase/migrations/002_add_font_columns.sql` has been applied.
+
 If a changed slug still serves stale content, confirm mutation routes are calling `revalidateTag` and that the old slug was saved before the patch.
 
 If Tailwind utility color classes like `text-white` appear to have no effect on `a` elements, check that `globals.css` does not define `a { color: ... }` outside a `@layer` block. Non-layered CSS rules override all `@layer utilities` rules. The fix is to move the rule into `@layer base`.
 
 ## Known State
+
+On 2026-06-09:
+
+- Project docs were reconciled against the current code state.
+- Current UI style is editorial personal-portfolio: Cormorant Garamond display type, Inter body type, olive accents, cream canvas, thin borders, rounded 10px cards, and soft shadows.
+- Studio editor supports Markdown body mode (`content_md`), cover image selection/upload (`cover_image`), and article font controls (`font_family`, `font_size`).
+- Admin upload API is implemented at `/api/admin/upload` for authenticated image uploads up to 5MB.
 
 On 2026-05-07:
 

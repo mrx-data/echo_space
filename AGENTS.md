@@ -6,12 +6,12 @@ Echo Space is a small personal website in `/Users/echo/Documents/echo_space`.
 
 - Stack: Next.js 16 App Router, React 19, TypeScript, Tailwind CSS v4, lucide-react, Supabase Postgres/Auth.
 - Public routes: `/`, `/articles`, `/articles?tag=<category>`, `/content/[slug]`, `/content/echo-space`.
-- Admin routes: `/studio`, `/studio/login`, `/studio/articles`, `/studio/articles?tag=<category>&q=<title>`, `/studio/articles/new`, `/studio/articles/[id]`, `/studio/categories`.
+- Admin routes: `/studio`, `/studio/login`, `/studio/auth/callback`, `/studio/articles`, `/studio/articles?tag=<category>&q=<title>`, `/studio/articles/new`, `/studio/articles/[id]`, `/studio/categories`.
 - Compatibility routes: `/editor` redirects to `/studio/articles/new`; `/api/articles` returns 410 and no longer writes files.
-- Admin APIs: `/api/admin/articles`, `/api/admin/articles/[id]`, `/api/admin/articles/[id]/publish`, `/api/admin/articles/[id]/unpublish`, `/api/admin/categories`, `/api/admin/categories/[name]`.
+- Admin APIs: `/api/admin/articles`, `/api/admin/articles/[id]`, `/api/admin/articles/[id]/publish`, `/api/admin/articles/[id]/unpublish`, `/api/admin/categories`, `/api/admin/categories/[name]`, `/api/admin/upload`.
 - Auth APIs: `/api/auth/login`, `/api/auth/magic-link`, `/api/auth/session`, `/api/auth/logout`.
 - Runtime content source: Supabase `articles` and `categories` tables. `lib/content.ts` remains only for types, fixtures, and local fallback when env vars are missing.
-- Design system: Neo-brutalism with hard black borders, hard offset shadows, cream canvas, red/yellow/violet accents, sticker rotations, and a CSS font stack preferring Space Grotesk.
+- Design system: editorial personal-portfolio style with cream canvas, olive accents, warm-gray lines, soft shadows, rounded 10px cards, Cormorant Garamond display type, and Inter body type.
 
 ## Commands
 
@@ -36,15 +36,17 @@ Configure these locally in `.env.local` and in Vercel. Never commit real secret 
 
 - `package.json` sets `dev` to `next dev --webpack`.
 - `next.config.ts` sets `turbopack.root` to `__dirname` so Next does not infer `/Users/echo` as the workspace root because of an upper-level lockfile.
-- `app/layout.tsx` declares `/icon.svg`; fonts are handled through the CSS font stack in `app/globals.css`.
-- `app/globals.css` owns design tokens, texture utilities, custom animations, text outline styling, and reduced-motion behavior. All global `a` rules are inside `@layer base` so Tailwind utility classes like `text-white` are not overridden.
-- `supabase/schema.sql` defines the `articles` and `categories` tables plus `updated_at` triggers.
+- `app/layout.tsx` declares `/icon.svg`; fonts are imported in `app/globals.css` with CSS `@import` for Cormorant Garamond and Inter.
+- `app/globals.css` owns editorial design tokens, dot-grid/card utilities, Markdown rendering styles, article font classes, and the global `a` rule inside `@layer base` so Tailwind utility classes like `text-white` are not overridden.
+- `supabase/schema.sql` defines the `articles` and `categories` tables plus `updated_at` triggers. Article columns include `content_md`, `cover_image`, `font_family`, and `font_size`; older environments may need `supabase/migrations/002_add_font_columns.sql`.
 - `scripts/seed-supabase-articles.mjs` upserts the current `lib/content.ts` fixture articles into Supabase and upserts fixture tags as categories.
 - `lib/supabase.ts` contains direct Supabase REST/Auth helpers; no Supabase SDK dependency is installed.
-- `lib/articles-db.ts` maps Supabase rows to the article render shape, validates drafts/publish requests, manages category CRUD, revalidates `articles`, `categories`, `article:{slug}`, and `category:{name}` tags after mutations, and exports `permanentlyDeleteArticle()` for hard deletion.
+- `lib/articles-db.ts` maps Supabase rows to the article render shape, supports fallback selects for older schemas missing newer article columns, validates drafts/publish requests, manages category CRUD, revalidates `articles`, `categories`, `article:{slug}`, and `category:{name}` tags after mutations, and exports `permanentlyDeleteArticle()` for hard deletion.
 - `lib/auth.ts` reads Supabase sessions from HttpOnly cookies and exposes `requireAdminPage()` and `requireAdminApi()`.
 - Public pages only query `published` articles. Draft, publish, unpublish, archive, and permanent-delete actions go through server-side admin APIs using the service role key.
-- The Studio editor client component lives at `components/studio/article-editor-form.tsx`. It uses per-button action tracking (`activeAction` string) so only the clicked button shows a spinner. The preview panel is collapsible via a `showPreview` toggle. Article categories are selected from backend-managed categories and stored in `articles.tags`.
+- The Studio editor client component lives at `components/studio/article-editor-form.tsx`. It uses per-button action tracking (`activeAction` string) so only the clicked button shows a spinner. The preview panel is collapsible via a `showPreview` toggle and resizable with a split handle. Article categories are selected from backend-managed categories and stored in `articles.tags`.
+- The editor supports Markdown body mode (`content_md`), structured section mode (`sections`), predefined covers from `public/covers/`, custom cover uploads through `/api/admin/upload`, and article font controls stored in `font_family` / `font_size`.
+- `app/api/admin/upload/route.ts` requires admin auth, accepts image files only, enforces a 5MB limit, writes to `public/uploads/`, and returns a `/uploads/...` URL. This local filesystem path is fine for local/dev; production persistence depends on deployment filesystem behavior.
 - `components/studio/category-manager.tsx` powers `/studio/categories` for creating categories, editing descriptions/sort order, and deleting unused categories.
 - `components/studio/delete-article-button.tsx` is a standalone client component used on the article list page for permanent delete with `window.confirm` confirmation.
 - `app/editor/page.tsx` is only a redirect.
@@ -52,13 +54,21 @@ Configure these locally in `.env.local` and in Vercel. Never commit real secret 
 ## Editing Guidelines
 
 - Keep public copy in Chinese unless the user asks otherwise.
-- Keep the first viewport brand-forward: "Echo Space" must remain visually dominant on the homepage.
-- Prefer existing primitives (`NeoButton`, `NeoCard`, `StickerBadge`, `MarqueeStrip`, `SiteHeader`, `SiteFooter`) over one-off UI.
-- Preserve the Neo-brutalist constraints: no gray palettes, no soft shadows, no blur effects, no mid-radius rounded cards, and no gradient hero.
+- Keep the first viewport personal-brand-forward and preserve the current editorial portfolio tone.
+- Prefer existing primitives (`NeoButton`, `NeoCard`, `SiteHeader`, `SiteFooter`, plus legacy `StickerBadge` and `MarqueeStrip` where they still fit) over one-off UI.
+- Preserve the current editorial constraints: cream canvas, olive accents, thin warm-gray borders, soft but restrained shadows, rounded 10px cards, serif display typography, and no loud gradient hero.
 - When adding pages, update `README.md`, `docs/architecture.md`, and `docs/runbook.md`.
 - When changing data shape, update `supabase/schema.sql`, `lib/articles-db.ts`, seed behavior, and the docs together.
 
 ## Verified State
+
+On 2026-06-09:
+
+- Documentation and agent memory were reconciled against current code.
+- Current UI is editorial personal-portfolio style, not the earlier Neo-brutalist style.
+- Current header links are 首页, 文章, 关于, and a mail CTA; Studio remains available directly at `/studio/*` behind admin auth.
+- Studio editor supports Markdown body mode, cover image selection/upload, article font controls, collapsible/resizable preview, category multi-select, publish/unpublish/archive, and permanent delete.
+- `app/api/admin/upload/route.ts` exists for authenticated image uploads to `public/uploads/`.
 
 On 2026-05-07:
 
@@ -66,7 +76,6 @@ On 2026-05-07:
 - `npm run lint` passed.
 - `npm run build` passed after allowing Turbopack/PostCSS to bind a local process port outside the sandbox.
 - Homepage changed from an atmosphere-first page to a clearer personal work index with backend-managed category links, curated work cards, latest article entry, GitHub, and email contact.
-- Public header has both `写作` (`/studio/articles/new`) and `管理` (`/studio/articles`) desktop buttons; both Studio routes require admin login.
 - Category system implemented in code: `categories` schema, `/studio/categories`, `/api/admin/categories`, `/api/admin/categories/[name]`, editor category multi-select, and seed upsert from fixture tags.
 - Public category filtering works at `/articles?tag=<category>`.
 - Admin article filtering works at `/studio/articles?tag=<category>&q=<title>`.
